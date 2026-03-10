@@ -1,6 +1,6 @@
 {
   "meta": {
-    "appName": "SCDO Control Tower — Factory Execution Loop",
+    "appName": "FDOS — Factory Delivery Orchestration System",
     "subtitle": "A closed-loop pacing layer that brings factory execution signals into SCDO to reduce late risk and overbuild liability.",
     "version": "0.2",
     "lastRefresh": "2026-01-19 14:30",
