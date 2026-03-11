@@ -36,9 +36,13 @@ const Router = {
       'data-foundation': 'dataFoundation',
       'white-paper': 'whitePaper',
       'team-ai-strategy': 'teamAIStrategy',
-      // Program workspace sub-views
-      'delivery-command-center': 'home',
+      // Top-level pages
       'production-plan': 'production-plan',
+      'production-mgmt': 'productionMgmt',
+      'fv-cost-management': 'fv-management',
+      'campus-planning': 'campus-readiness',
+      // Program workspace sub-views (legacy)
+      'delivery-command-center': 'home',
       'mfg-leadtime': 'mfg-leadtime',
       'bto-cto-leadtime': 'bto-cto-leadtime',
       'fv-tracker': 'fv-management',
@@ -88,20 +92,22 @@ const Router = {
       'dataFoundation': 'data-foundation',
       'whitePaper': 'white-paper',
       'teamAIStrategy': 'team-ai-strategy',
-      // Program workspace sub-views
-      'production-plan': 'mo-dashboard',
+      // Top-level pages
+      'production-plan': 'production-plan',
+      'productionMgmt': 'production-mgmt',
+      'fv-management': 'fv-cost-management',
+      'campus-readiness': 'campus-planning',
+      // Program workspace sub-views (legacy)
       'mfg-leadtime': 'mo-dashboard',
       'bto-cto-leadtime': 'mo-dashboard',
-      'fv-management': 'mo-dashboard',
-      'labor-fulfillment': 'mo-dashboard',
-      'campus-readiness': 'mo-dashboard'
+      'labor-fulfillment': 'mo-dashboard'
     };
 
     let hash = `/${viewUrlMap[view] || 'overview'}`;
 
     // Add product/site/week for program workspace views
-    const programViews = ['home', 'production-plan', 'mfg-leadtime', 'bto-cto-leadtime',
-                          'fv-management', 'labor-fulfillment', 'campus-readiness'];
+    const programViews = ['home', 'mfg-leadtime', 'bto-cto-leadtime',
+                          'labor-fulfillment'];
 
     if (programViews.includes(view) && product) {
       hash += `/${this.productToUrl(product)}`;

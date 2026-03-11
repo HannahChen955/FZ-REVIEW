@@ -1,0 +1,79 @@
+<svg width="1100" height="650" xmlns="http://www.w3.org/2000/svg">
+
+<style>
+.box { fill:#f3f3f3; stroke:#555; stroke-width:2; rx:12; ry:12;}
+.text { font-family:Arial; font-size:14px; fill:#222; font-weight:bold;}
+.small { font-size:12px; fill:#777; font-family:Arial;}
+.arrow { stroke:#666; stroke-width:2; marker-end:url(#arrow);}
+.title { font-family:Arial; font-size:22px; font-weight:bold; fill:#222;}
+.subtitle { font-family:Arial; font-size:14px; fill:#666;}
+</style>
+
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+<path d="M0,0 L6,3 L0,6 Z" fill="#666"/>
+</marker>
+</defs>
+
+<text x="300" y="40" class="title">Ramp Execution Loop — Today</text>
+<text x="260" y="65" class="subtitle">Execution heavily relies on manual coordination</text>
+
+<!-- Boxes -->
+
+<rect x="70" y="180" width="190" height="90" class="box"/>
+<text x="85" y="205" class="text">Factory Signals</text>
+<text x="85" y="225" class="small">Production Data</text>
+<text x="85" y="240" class="small">Material Status</text>
+<text x="85" y="255" class="small">⚠ Manual Collection</text>
+
+<rect x="300" y="90" width="200" height="90" class="box"/>
+<text x="320" y="115" class="text">BOD Meeting</text>
+<text x="320" y="135" class="small">Production Review</text>
+<text x="320" y="150" class="small">Material / Yield Status</text>
+<text x="320" y="165" class="small">⚠ Meeting Heavy</text>
+
+<rect x="560" y="180" width="210" height="90" class="box"/>
+<text x="575" y="205" class="text">Issue Investigation</text>
+<text x="575" y="225" class="small">Yield / Material / Quality</text>
+<text x="575" y="240" class="small">Cross Team Inputs</text>
+<text x="575" y="255" class="small">⚠ Fragmented Information</text>
+
+<rect x="820" y="300" width="220" height="100" class="box"/>
+<text x="835" y="330" class="text">Cross-functional Coordination</text>
+<text x="835" y="350" class="small">MPM / Planning</text>
+<text x="835" y="365" class="small">Engineering / Logistics / CM</text>
+<text x="835" y="380" class="small">⚠ Heavy Communication</text>
+
+<rect x="580" y="450" width="210" height="90" class="box"/>
+<text x="600" y="475" class="text">Impact Simulation</text>
+<text x="600" y="495" class="small">Delivery Risk</text>
+<text x="600" y="510" class="small">Scenario Analysis</text>
+<text x="600" y="525" class="small">⚠ Manual Excel</text>
+
+<rect x="300" y="470" width="200" height="90" class="box"/>
+<text x="320" y="495" class="text">Execution Adjustment</text>
+<text x="320" y="515" class="small">Priority Change</text>
+<text x="320" y="530" class="small">Alternative Supply</text>
+
+<rect x="100" y="420" width="200" height="90" class="box"/>
+<text x="120" y="445" class="text">EOD Review</text>
+<text x="120" y="465" class="small">Daily Checkpoint</text>
+<text x="120" y="480" class="small">Issue Progress</text>
+
+<rect x="80" y="330" width="200" height="80" class="box"/>
+<text x="100" y="355" class="text">Daily Status Update</text>
+<text x="100" y="375" class="small">Manual Summary</text>
+<text x="100" y="390" class="small">⚠ Manual Reporting</text>
+
+<!-- Arrows -->
+
+<line x1="260" y1="220" x2="300" y2="140" class="arrow"/>
+<line x1="500" y1="140" x2="560" y2="220" class="arrow"/>
+<line x1="770" y1="230" x2="820" y2="320" class="arrow"/>
+<line x1="930" y1="400" x2="700" y2="450" class="arrow"/>
+<line x1="580" y1="500" x2="500" y2="500" class="arrow"/>
+<line x1="300" y1="500" x2="200" y2="470" class="arrow"/>
+<line x1="200" y1="420" x2="180" y2="400" class="arrow"/>
+<line x1="180" y1="330" x2="120" y2="260" class="arrow"/>
+
+</svg>

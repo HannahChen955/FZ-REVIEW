@@ -617,8 +617,8 @@ function navigateTo(view, updateUrl = true) {
 
   // Program workspace sub-views share the same URL (/mo-dashboard)
   // So we don't update URL for these, just render the new view
-  const programWorkspaceSubViews = ['production-plan', 'mfg-leadtime', 'bto-cto-leadtime',
-                                     'fv-management', 'labor-fulfillment', 'campus-readiness'];
+  const programWorkspaceSubViews = ['mfg-leadtime', 'bto-cto-leadtime',
+                                     'labor-fulfillment'];
 
   if (programWorkspaceSubViews.includes(view)) {
     // For sub-views, just render without changing URL
@@ -956,7 +956,7 @@ function runSimulation() {
 function render() {
   // Determine if we're in Program workspace (vs Global pages)
   // Decision Center and Data Foundation are global pages - no sidebar filters
-  const isProgramWorkspace = ["home", "delivery", "production-plan", "command-center", "mfg-leadtime", "bto-cto-leadtime", "fv-management", "labor-fulfillment", "campus-readiness", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
+  const isProgramWorkspace = ["home", "delivery", "command-center", "mfg-leadtime", "bto-cto-leadtime", "labor-fulfillment", "signals", "radar", "actions", "reports"].includes(STATE.activeView);
 
   // Toggle sidebar visibility
   const sidebar = $("sidebar");
@@ -992,8 +992,9 @@ function render() {
   const filtersBar = document.querySelector(".no-print.bg-slate-50.border-b");
   const updateDataBtn = document.querySelector("#updateDataBtn");
 
-  if (STATE.activeView === "overview" || STATE.activeView === "notification" || STATE.activeView === "portfolio" || STATE.activeView === "moKpis" || STATE.activeView === "dataFoundation" || STATE.activeView === "whitePaper" || STATE.activeView === "teamAIStrategy") {
-    // Hide filters on global pages (Overview, Notification, Decision Center, MO KPIs, Data Foundation, White Paper, Team AI Strategy)
+  const globalPages = ["overview", "notification", "portfolio", "moKpis", "production-plan", "productionMgmt", "fv-management", "campus-readiness", "dataFoundation", "whitePaper", "teamAIStrategy"];
+  if (globalPages.includes(STATE.activeView)) {
+    // Hide filters on global pages
     if (filtersBar) filtersBar.style.display = "none";
   } else {
     // Show filters and Update Data button on Program workspace
@@ -1059,6 +1060,9 @@ function render() {
     case "moKpis":
       renderMOKpis();
       break;
+    case "productionMgmt":
+      renderProductionManagement();
+      break;
     case "dataFoundation":
       renderDataFoundation();
       break;
@@ -1104,490 +1108,356 @@ function updateBreadcrumb() {
 // OVERVIEW - Vision & Scope
 // ========================================
 function renderOverview() {
-  console.log('renderOverview called. STATE.data:', STATE.data);
-  const overview = STATE.data?.overview;
-  console.log('Overview data:', overview);
-
-  if (!overview) {
-    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Overview data not available. Please refresh the page (Cmd+Shift+R).</div>`;
-    return;
-  }
-
   const html = `
     <!-- ============================================================ -->
-    <!-- 0) HERO: Restrained Introduction -->
+    <!-- 0) HERO -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-slate-300 rounded-xl p-8 mb-6">
       <h1 class="text-3xl font-bold text-slate-900 mb-2">FDOS — Factory Delivery Orchestration System</h1>
       <div class="text-base text-slate-700 mb-3">
-        Turning factory execution into deliverable commitments across the supply chain.
+        Turning factory execution signals into delivery decisions.
       </div>
-      <div class="text-sm text-slate-600 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
-        FDOS closes the missing factory link by standardizing execution signals and routing decisions with evidence.
+      <div class="text-sm text-slate-600 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg space-y-2">
+        <p>FDOS closes the missing factory link by standardizing execution signals and routing decisions with evidence.</p>
+        <p>In complex manufacturing environments, operational signals often remain fragmented across planning systems, factory reports, and communication channels.</p>
+        <p>FDOS converts these signals into structured insights that enable faster and more reliable operational decisions.</p>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- 1) THE MISSING LINK: Why this exists -->
+    <!-- 1) MO ROLE: Cross-Constraint Orchestrator -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-indigo-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-1">Manufacturing Operations</div>
+      <div class="text-sm font-semibold text-indigo-700 mb-4">The Cross-Constraint Orchestrator</div>
+      <div class="text-sm text-slate-700 space-y-2 mb-5">
+        <p>Manufacturing Operations operates at the intersection of multiple operational constraints.</p>
+        <p>Every production decision must balance three constantly shifting forces:</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 text-center">
+          <div class="text-3xl mb-2">📦</div>
+          <div class="text-sm font-bold text-blue-900">Supply Variability</div>
+          <div class="text-xs text-blue-700 mt-1">Material availability, supplier lead times, and component readiness</div>
+        </div>
+        <div class="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-5 text-center">
+          <div class="text-3xl mb-2">📊</div>
+          <div class="text-sm font-bold text-amber-900">Demand Volatility</div>
+          <div class="text-xs text-amber-700 mt-1">Forecast changes, order shifts, and commitment adjustments</div>
+        </div>
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-xl p-5 text-center">
+          <div class="text-3xl mb-2">🏭</div>
+          <div class="text-sm font-bold text-green-900">Factory Capacity</div>
+          <div class="text-xs text-green-700 mt-1">Production throughput, yield rates, and resource constraints</div>
+        </div>
+      </div>
+
+      <div class="text-sm text-slate-700 space-y-2">
+        <p>MO continuously orchestrates signals across production, materials, planning, logistics, and engineering teams to maintain stable execution.</p>
+        <p>Rather than operating within a single functional boundary, MO acts as the coordination layer that translates evolving factory conditions into executable supply outcomes.</p>
+        <p>This orchestration role becomes increasingly critical as product portfolios expand and operational complexity grows.</p>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 2) WHY THIS EXISTS -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-red-200 rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold text-slate-900 mb-2">Why this exists</div>
-      <div class="text-sm text-slate-700 space-y-2 mb-5">
-        <p>Factory execution is the least standardized part of the end-to-end decision chain.</p>
-        <p>When factory signals are missing or inconsistent, planning and commitments become "best guesses" — and the loop cannot learn.</p>
-        <p><strong>FDOS exists to turn factory reality into decision-grade signals</strong> that can be used by planners and leaders.</p>
+      <div class="text-lg font-bold text-slate-900 mb-2">Why This Exists</div>
+      <div class="text-sm text-slate-700 space-y-2 mb-4">
+        <p>Factory execution is often the least standardized segment of the end-to-end supply chain.</p>
+        <p>Operational signals originate from multiple sources:</p>
       </div>
-
-      <!-- Supply Chain Flow Diagram -->
-      <div class="relative">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-3xl mb-2">📦</div>
-            <div class="text-sm font-bold text-slate-900">Planning</div>
-            <div class="text-xs text-slate-600 mt-1">Forecast / Build Plan</div>
-          </div>
-          <div class="text-3xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[140px] p-4 bg-red-50 border-2 border-red-400 border-dashed rounded-xl text-center">
-            <div class="text-3xl mb-2">🏭</div>
-            <div class="text-sm font-bold text-red-700">Manufacturing</div>
-            <div class="text-xs text-red-600 font-bold mt-1">MISSING TODAY</div>
-          </div>
-          <div class="text-3xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-3xl mb-2">🚚</div>
-            <div class="text-sm font-bold text-slate-900">Logistics</div>
-            <div class="text-xs text-slate-600 mt-1">Shipments / ETA</div>
-          </div>
-          <div class="text-3xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-3xl mb-2">📊</div>
-            <div class="text-sm font-bold text-slate-900">Inventory</div>
-            <div class="text-xs text-slate-600 mt-1">FG / Transit</div>
-          </div>
-          <div class="text-3xl text-slate-400">→</div>
-          <div class="flex-1 min-w-[140px] p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-center">
-            <div class="text-3xl mb-2">🧾</div>
-            <div class="text-sm font-bold text-slate-900">Orders</div>
-            <div class="text-xs text-slate-600 mt-1">Demand / Commit</div>
-          </div>
-        </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center text-xs text-slate-700">Factory production reports</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center text-xs text-slate-700">Material readiness updates</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center text-xs text-slate-700">Planning systems</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center text-xs text-slate-700">Engineering change notifications</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center text-xs text-slate-700">Logistics updates</div>
+      </div>
+      <div class="text-sm text-slate-700 space-y-2 mb-4">
+        <p>When these signals are incomplete or inconsistent, planning assumptions become unreliable.</p>
+        <p>As a result, decision-making often relies on manual reconciliation and experience-driven interpretation.</p>
+      </div>
+      <div class="border-l-4 border-red-500 bg-red-50 rounded-r-lg p-4">
+        <div class="text-sm font-bold text-red-900">Factory signals often do not travel cleanly across the chain.</div>
+        <div class="text-sm text-red-800 mt-1">FDOS exists to convert factory reality into decision-grade signals that planners and operational leaders can rely on.</div>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- 2) WHY FACTORY DATA IS HARD: 4 compact challenge cards -->
+    <!-- 3) EXECUTION FRICTION -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold text-slate-900 mb-2">Why factory signals don't travel well today</div>
+      <div class="text-lg font-bold text-slate-900 mb-2">Why Factory Signals Don't Travel Well Today</div>
+      <div class="text-sm text-slate-600 mb-4">Operational friction typically appears in four areas:</div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Card 1: Metric inconsistency -->
         <div class="border-2 border-amber-200 bg-amber-50 rounded-lg p-4">
-          <div class="text-sm font-bold text-slate-900 mb-2">Metric inconsistency</div>
+          <div class="text-sm font-bold text-slate-900 mb-2">Metric Inconsistency</div>
           <div class="text-xs text-slate-700 space-y-1">
-            <div>• Same names, different definitions across sites/tools</div>
-            <div>• Reconciliation becomes manual</div>
+            <p>Operational metrics may use similar terminology but different definitions across systems.</p>
+            <p>This requires manual reconciliation before the signals can be used in decision-making.</p>
           </div>
         </div>
 
-        <!-- Card 2: Messy inputs -->
         <div class="border-2 border-red-200 bg-red-50 rounded-lg p-4">
-          <div class="text-sm font-bold text-slate-900 mb-2">Messy inputs</div>
+          <div class="text-sm font-bold text-slate-900 mb-2">Messy Inputs</div>
           <div class="text-xs text-slate-700 space-y-1">
-            <div>• Manual logs and missing fields</div>
-            <div>• Low trust without validation</div>
+            <p>Factory inputs frequently contain missing fields, inconsistent formats, or partial updates.</p>
+            <p>This reduces confidence in the data and slows operational alignment.</p>
           </div>
         </div>
 
-        <!-- Card 3: High change speed -->
         <div class="border-2 border-orange-200 bg-orange-50 rounded-lg p-4">
-          <div class="text-sm font-bold text-slate-900 mb-2">High change speed</div>
+          <div class="text-sm font-bold text-slate-900 mb-2">High Change Speed</div>
           <div class="text-xs text-slate-700 space-y-1">
-            <div>• Yield/constraints/staffing shift daily</div>
-            <div>• Dashboards lag behind reality</div>
+            <p>Factory conditions evolve continuously throughout the day.</p>
+            <p>Operational dashboards and reports often lag behind real conditions, limiting decision agility.</p>
           </div>
         </div>
 
-        <!-- Card 4: Truth lives offline -->
         <div class="border-2 border-purple-200 bg-purple-50 rounded-lg p-4">
-          <div class="text-sm font-bold text-slate-900 mb-2">Truth lives offline</div>
+          <div class="text-sm font-bold text-slate-900 mb-2">Truth Lives Offline</div>
           <div class="text-xs text-slate-700 space-y-1">
-            <div>• Key context sits in meetings/photos/notes</div>
-            <div>• Systems miss the "why"</div>
+            <p>Critical operational context frequently exists in meetings, chat threads, or spreadsheets rather than structured systems.</p>
+            <p>As a result, important insights remain difficult to reuse or analyze systematically.</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- 3) HOW FDOS WORKS: The 4-step mechanism -->
+    <!-- 4) HOW FDOS WORKS -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-blue-200 rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold text-slate-900 mb-2">How FDOS works (the mechanism)</div>
-      <div class="text-sm text-slate-600 mb-5">Four-step process to turn factory data into decision-grade signals</div>
+      <div class="text-lg font-bold text-slate-900 mb-2">How FDOS Turns Signals into Decisions</div>
+      <div class="text-sm text-slate-600 mb-5">FDOS transforms fragmented operational signals into structured decision workflows through four mechanisms.</div>
 
       <div class="space-y-4">
-        <!-- Step 1: Standardize -->
-        <div class="flex items-start gap-4 border-l-4 border-blue-500 pl-4 py-2">
+        <div class="flex items-start gap-4 border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
           <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
           <div>
             <div class="font-bold text-slate-900 mb-1">Standardize</div>
-            <div class="text-sm text-slate-700">Build a shared metric dictionary: definition, grain, owner, refresh rules — so "the same word means the same thing."</div>
+            <div class="text-sm text-slate-700">Operational signals are standardized using shared definitions for metrics, data granularity, and refresh cadence. This ensures that signals carry consistent meaning across systems and teams.</div>
           </div>
         </div>
 
-        <!-- Step 2: Validate -->
-        <div class="flex items-start gap-4 border-l-4 border-green-500 pl-4 py-2">
+        <div class="flex items-start gap-4 border-l-4 border-green-500 pl-4 py-3 bg-green-50 rounded-r-lg">
           <div class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
           <div>
             <div class="font-bold text-slate-900 mb-1">Validate</div>
-            <div class="text-sm text-slate-700">Attach confidence to every key signal (freshness, coverage, reconciliation) so decisions can distinguish "real risk" vs "data noise."</div>
+            <div class="text-sm text-slate-700">Each signal receives confidence indicators including freshness, completeness, and reconciliation status. This allows decision-makers to distinguish reliable signals from noise.</div>
           </div>
         </div>
 
-        <!-- Step 3: Route decisions -->
-        <div class="flex items-start gap-4 border-l-4 border-amber-500 pl-4 py-2">
+        <div class="flex items-start gap-4 border-l-4 border-amber-500 pl-4 py-3 bg-amber-50 rounded-r-lg">
           <div class="flex-shrink-0 w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
           <div>
-            <div class="font-bold text-slate-900 mb-1">Route decisions</div>
-            <div class="text-sm text-slate-700">When an outcome is at risk, the system routes it to the right owner with an SLA, linked evidence, and a small set of action options.</div>
+            <div class="font-bold text-slate-900 mb-1">Route Decisions</div>
+            <div class="text-sm text-slate-700">When signals indicate potential delivery risk, FDOS automatically routes the issue to the responsible owner. Each decision includes supporting evidence, operational context, suggested action options, and response expectations.</div>
           </div>
         </div>
 
-        <!-- Step 4: Close the loop -->
-        <div class="flex items-start gap-4 border-l-4 border-purple-500 pl-4 py-2">
+        <div class="flex items-start gap-4 border-l-4 border-purple-500 pl-4 py-3 bg-purple-50 rounded-r-lg">
           <div class="flex-shrink-0 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
           <div>
-            <div class="font-bold text-slate-900 mb-1">Close the loop</div>
-            <div class="text-sm text-slate-700">Record what decision was taken and what happened next — so the system can learn which actions actually change outcomes.</div>
+            <div class="font-bold text-slate-900 mb-1">Close the Loop</div>
+            <div class="text-sm text-slate-700">Decisions and outcomes are recorded so the system can continuously learn which actions actually improve execution results. This creates a feedback loop that improves decision accuracy over time.</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- 4) BUILT TO AVOID KPI THEATER: 4 hard guardrails -->
-    <!-- ============================================================ -->
-    <div class="bg-white border-2 border-green-200 rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold text-slate-900 mb-2">Built to avoid KPI theater</div>
-      <div class="text-sm text-slate-600 mb-4">Four hard-coded principles to ensure FDOS routes decisions, not ranks performance</div>
-
-      <div class="space-y-3">
-        <!-- Rule 1 -->
-        <div class="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-3">
-          <div class="text-sm font-bold text-slate-900 mb-1">No color without an action</div>
-          <div class="text-xs text-slate-700">Every Yellow/Red must have an owner, SLA, evidence, and options.</div>
-        </div>
-
-        <!-- Rule 2 -->
-        <div class="border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
-          <div class="text-sm font-bold text-slate-900 mb-1">Routing, not scoring</div>
-          <div class="text-xs text-slate-700">Status is a decision signal, never a performance grade.</div>
-        </div>
-
-        <!-- Rule 3 -->
-        <div class="border-l-4 border-amber-500 bg-amber-50 rounded-r-lg p-3">
-          <div class="text-sm font-bold text-slate-900 mb-1">No raw cross-site ranking</div>
-          <div class="text-xs text-slate-700">Comparisons require context and consistent definitions.</div>
-        </div>
-
-        <!-- Rule 4 -->
-        <div class="border-l-4 border-purple-500 bg-purple-50 rounded-r-lg p-3">
-          <div class="text-sm font-bold text-slate-900 mb-1">Confidence before conclusions</div>
-          <div class="text-xs text-slate-700">Low-confidence signals route to validation, not escalation.</div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- ============================================================ -->
-    <!-- 5) OPERATING MODEL: What runs in FDOS every week -->
+    <!-- 5) OPERATIONAL RHYTHM -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold text-slate-900 mb-2">What runs in FDOS every week</div>
-      <div class="text-sm text-slate-600 mb-5">The system operates on a predictable cadence to keep factory execution aligned with commitments</div>
+      <div class="text-lg font-bold text-slate-900 mb-2">Operational Rhythm</div>
+      <div class="text-sm text-slate-600 mb-5">FDOS supports a predictable operational cadence that keeps factory execution aligned with delivery commitments.</div>
 
       <div class="space-y-3 mb-5">
-        <!-- Weekly -->
-        <div class="flex items-start gap-3 border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r-lg">
+        <div class="flex items-start gap-3 border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
           <div class="flex-shrink-0 font-bold text-sm text-blue-900 w-16">Weekly</div>
-          <div class="text-sm text-slate-700">Commitments are set → FDOS tracks whether factory execution can meet them.</div>
+          <div class="text-sm text-slate-700">Delivery commitments are established. FDOS monitors whether factory execution signals remain aligned with those commitments.</div>
         </div>
 
-        <!-- Daily -->
-        <div class="flex items-start gap-3 border-l-4 border-green-500 pl-4 py-2 bg-green-50 rounded-r-lg">
+        <div class="flex items-start gap-3 border-l-4 border-green-500 pl-4 py-3 bg-green-50 rounded-r-lg">
           <div class="flex-shrink-0 font-bold text-sm text-green-900 w-16">Daily</div>
-          <div class="text-sm text-slate-700">Constraints (materials/capacity/yield) update → FDOS refreshes risk and routes decisions.</div>
+          <div class="text-sm text-slate-700">Material readiness, capacity signals, and yield updates continuously refresh execution visibility. The system evaluates emerging risks and routes required actions.</div>
         </div>
 
-        <!-- 48h window -->
-        <div class="flex items-start gap-3 border-l-4 border-amber-500 pl-4 py-2 bg-amber-50 rounded-r-lg">
-          <div class="flex-shrink-0 font-bold text-sm text-amber-900 w-16">48h window</div>
-          <div class="text-sm text-slate-700">The system prioritizes the few decisions that can still change this week's outcome.</div>
+        <div class="flex items-start gap-3 border-l-4 border-amber-500 pl-4 py-3 bg-amber-50 rounded-r-lg">
+          <div class="flex-shrink-0 font-bold text-sm text-amber-900 w-24">48-Hour Window</div>
+          <div class="text-sm text-slate-700">Within the final window before shipments, FDOS prioritizes the limited set of decisions that can still change the weekly outcome. This ensures operational attention focuses on the highest-impact decisions.</div>
         </div>
       </div>
 
-      <!-- Closed-loop chain -->
       <div class="border-t pt-4">
-        <div class="text-xs font-semibold text-slate-700 mb-2">Closed-loop chain:</div>
+        <div class="text-xs font-semibold text-slate-700 mb-2">Closed-loop execution chain:</div>
         <div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 font-mono">
-          Plan → Constraints → Input → Output → Shipment readiness → Commit → Exceptions → Actions → Learning
+          Plan → Constraints → Inputs → Outputs → Shipment Readiness → Commit → Exceptions → Actions → Learning
         </div>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- 6) IMPLEMENTATION ROADMAP (keep as-is) -->
+    <!-- 6) NORTH STAR: Future Smart Factory -->
     <!-- ============================================================ -->
-    <!-- Implementation Roadmap with Timeline -->
-    <div class="bg-white border rounded-xl p-6 mb-6">
-      <div class="text-lg font-bold mb-2">Implementation Roadmap: Q1 2026 - Q4 2026</div>
-      <div class="text-sm text-slate-600 mb-6">Four-phase deployment strategy with clear milestones and deliverables</div>
+    <div class="bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">North Star — Future Smart Factory</div>
+      <div class="text-sm text-slate-700 space-y-2 mb-6">
+        <p>FDOS represents an important step toward a future operating model in which manufacturing execution becomes increasingly autonomous.</p>
+        <p>This vision is referred to as the <strong>Future Smart Factory</strong>.</p>
+        <p>The Future Smart Factory moves beyond manual coordination toward engineered decision systems.</p>
+      </div>
 
-      <!-- Timeline Visualization -->
-      <div class="relative mb-8">
-        <!-- Timeline Bar -->
-        <div class="absolute top-6 left-0 right-0 h-1 bg-slate-200"></div>
-        <div class="absolute top-6 left-0 w-[25%] h-1 bg-green-500"></div>
-
-        <!-- Phase Markers -->
-        <div class="relative grid grid-cols-4 gap-2">
-          <!-- Q1 2026 -->
-          <div class="relative">
-            <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold shadow-lg ring-4 ring-green-100 relative z-10">
-                Q1
-              </div>
-              <div class="mt-2 text-center">
-                <div class="text-xs font-bold text-green-700">Phase 1</div>
-                <div class="text-xs text-slate-600">Jan - Mar 2026</div>
-                <span class="inline-block px-2 py-0.5 bg-green-100 text-green-800 text-xs font-semibold rounded mt-1">IN PROGRESS</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Q2 2026 -->
-          <div class="relative">
-            <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg relative z-10">
-                Q2
-              </div>
-              <div class="mt-2 text-center">
-                <div class="text-xs font-bold text-blue-700">Phase 2</div>
-                <div class="text-xs text-slate-600">Apr - Jun 2026</div>
-                <span class="inline-block px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded mt-1">PLANNED</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Q3 2026 -->
-          <div class="relative">
-            <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white font-bold shadow-md relative z-10">
-                Q3
-              </div>
-              <div class="mt-2 text-center">
-                <div class="text-xs font-bold text-slate-700">Phase 3</div>
-                <div class="text-xs text-slate-600">Jul - Sep 2026</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Q4 2026 -->
-          <div class="relative">
-            <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white font-bold shadow-md relative z-10">
-                Q4
-              </div>
-              <div class="mt-2 text-center">
-                <div class="text-xs font-bold text-slate-700">Phase 4</div>
-                <div class="text-xs text-slate-600">Oct - Dec 2026</div>
-              </div>
-            </div>
-          </div>
+      <!-- Operating Model Evolution -->
+      <div class="text-sm font-semibold text-indigo-800 mb-3">Operating Model Evolution</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white border-2 border-slate-300 rounded-xl p-5 text-center relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-slate-500 text-white text-xs font-bold rounded-full">Stage 1</div>
+          <div class="text-2xl mb-2 mt-2">🔧</div>
+          <div class="text-sm font-bold text-slate-900 mb-2">Manual Stabilization</div>
+          <div class="text-xs text-slate-600">Operational teams manually detect and resolve issues as they arise.</div>
+        </div>
+        <div class="bg-white border-2 border-blue-300 rounded-xl p-5 text-center relative ring-2 ring-blue-200">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-blue-600 text-white text-xs font-bold rounded-full">Stage 2</div>
+          <div class="text-2xl mb-2 mt-2">⚙️</div>
+          <div class="text-sm font-bold text-blue-900 mb-2">System-Enabled Orchestration</div>
+          <div class="text-xs text-blue-800">FDOS consolidates operational signals and coordinates execution decisions across the factory network.</div>
+        </div>
+        <div class="bg-white border-2 border-purple-300 rounded-xl p-5 text-center relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-purple-600 text-white text-xs font-bold rounded-full">Stage 3</div>
+          <div class="text-2xl mb-2 mt-2">🤖</div>
+          <div class="text-sm font-bold text-purple-900 mb-2">AI-Driven Execution</div>
+          <div class="text-xs text-purple-800">AI agents manage routine operational decisions using predefined guardrails while human operators oversee strategic decisions and exceptions.</div>
         </div>
       </div>
 
-      <!-- Phase Details -->
-      <div class="space-y-4">
-        <!-- Phase 1: Foundation -->
-        <div class="border-2 border-green-400 rounded-xl overflow-hidden">
-          <div class="bg-gradient-to-r from-green-50 to-green-100 px-4 py-3 border-b-2 border-green-400">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">1</div>
-                <div>
-                  <div class="font-bold text-slate-900">Phase 1: Foundation & Core Modules</div>
-                  <div class="text-xs text-slate-600">Q1 2026 (Jan - Mar) · 12 weeks</div>
-                </div>
-              </div>
-              <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">IN PROGRESS</span>
-            </div>
-          </div>
-          <div class="p-4 bg-white">
-            <div class="grid grid-cols-2 gap-4 mb-3">
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Decision Center & Program Workspace UI</span></li>
-                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Delivery Command Center module</span></li>
-                  <li class="flex items-start gap-2"><span class="text-green-600">✓</span><span>Manufacturing & BTO/CTO Lead-time tracking</span></li>
-                  <li class="flex items-start gap-2"><span class="text-yellow-600">⏳</span><span>Basic data ingestion pipeline</span></li>
-                </ul>
-              </div>
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Demo validated with 5+ stakeholders</li>
-                  <li>• Core workflows tested with pilot factory</li>
-                  <li>• 90% positive feedback on UI/UX design</li>
-                </ul>
-              </div>
-            </div>
-            <div class="pt-3 border-t">
-              <div class="text-xs font-semibold text-slate-700 mb-1">Current Status:</div>
-              <div class="text-xs text-slate-600">Prototype complete. Gathering stakeholder feedback for Phase 2 prioritization.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 2: Integration -->
-        <div class="border-2 border-blue-300 rounded-xl overflow-hidden">
-          <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b-2 border-blue-300">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">2</div>
-                <div>
-                  <div class="font-bold text-slate-900">Phase 2: Data Integration & AI Layer</div>
-                  <div class="text-xs text-slate-600">Q2 2026 (Apr - Jun) · 12 weeks</div>
-                </div>
-              </div>
-              <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">PLANNED</span>
-            </div>
-          </div>
-          <div class="p-4 bg-white">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Real-time data connectors (MES, ERP, WMS)</li>
-                  <li>• AI chatbot with natural language queries</li>
-                  <li>• Smart data update system (auto-parsing)</li>
-                  <li>• FV Management & Labor Fulfillment modules</li>
-                </ul>
-              </div>
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Connect to 3+ factory data sources</li>
-                  <li>• 95% data accuracy vs. manual tracking</li>
-                  <li>• AI response accuracy >85%</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 3: Integration Expansion -->
-        <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
-          <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">3</div>
-              <div>
-                <div class="font-bold text-slate-900">Phase 3: Integration Expansion</div>
-                <div class="text-xs text-slate-600">Q3 2026 (Jul - Sep) · 12 weeks</div>
-              </div>
-            </div>
-          </div>
-          <div class="p-4 bg-white">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Scale integrations across all major suppliers</li>
-                  <li>• Expand data connectivity to additional factories</li>
-                  <li>• Standardize data pipelines across regions</li>
-                  <li>• Complete supplier onboarding workflows</li>
-                </ul>
-              </div>
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• Connect to 10+ major suppliers</li>
-                  <li>• 95%+ data coverage across supply chain</li>
-                  <li>• Real-time sync across all factories</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 4: Advanced Analytics & AI Intelligence -->
-        <div class="border-2 border-slate-300 rounded-xl overflow-hidden">
-          <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b-2 border-slate-300">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-slate-500 text-white flex items-center justify-center text-sm font-bold">4</div>
-              <div>
-                <div class="font-bold text-slate-900">Phase 4: Advanced Analytics & AI Intelligence</div>
-                <div class="text-xs text-slate-600">Q4 2026 (Oct - Dec) · 12 weeks</div>
-              </div>
-            </div>
-          </div>
-          <div class="p-4 bg-white">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">📦 Deliverables</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• AI chatbot with natural language queries</li>
-                  <li>• Predictive risk modeling & analytics</li>
-                  <li>• Automated anomaly detection</li>
-                  <li>• Production Plan optimization engine</li>
-                </ul>
-              </div>
-              <div>
-                <div class="text-xs font-semibold text-slate-700 mb-2">🎯 Success Metrics</div>
-                <ul class="text-xs text-slate-600 space-y-1">
-                  <li>• AI response accuracy >85%</li>
-                  <li>• Predict 70% of delays 5+ days early</li>
-                  <li>• Reduce manual planning time by 40%</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Arrows between stages -->
+      <div class="hidden md:flex items-center justify-center gap-2 -mt-10 mb-6">
+        <div class="w-1/3 text-center text-2xl text-slate-300">→</div>
+        <div class="w-1/3 text-center text-2xl text-slate-300">→</div>
       </div>
 
+      <!-- Human Role Evolution -->
+      <div class="bg-white border border-indigo-200 rounded-xl p-5">
+        <div class="text-sm font-semibold text-indigo-800 mb-3">Human Role Evolution</div>
+        <div class="flex items-center gap-3 flex-wrap mb-4">
+          <span class="px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-sm font-medium text-slate-700">Manual Operator</span>
+          <span class="text-slate-400">→</span>
+          <span class="px-3 py-1.5 bg-blue-100 border border-blue-300 rounded-lg text-sm font-medium text-blue-800">Execution Coordinator</span>
+          <span class="text-slate-400">→</span>
+          <span class="px-3 py-1.5 bg-purple-100 border border-purple-300 rounded-lg text-sm font-medium text-purple-800">System Orchestrator</span>
+        </div>
+        <div class="text-sm text-slate-700">
+          Rather than replacing operational expertise, this evolution allows teams to focus on:
+        </div>
+        <ul class="text-sm text-slate-700 mt-2 space-y-1 ml-4">
+          <li>• Evaluating operational trade-offs</li>
+          <li>• Resolving ambiguous situations</li>
+          <li>• Guiding factory execution under changing conditions</li>
+        </ul>
+      </div>
     </div>
 
-    <!-- Demo Information Footer -->
-    <div class="bg-gradient-to-r from-slate-50 to-slate-100 border-2 border-slate-300 rounded-xl p-6">
-      <div class="flex items-start gap-4">
-        <div class="text-3xl">ℹ️</div>
-        <div class="flex-1">
-          <div class="text-sm font-bold text-slate-900 mb-3">About This Demonstration</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
-            <div>
-              <div class="font-semibold mb-2">Purpose</div>
-              <ul class="space-y-1">
-                <li>• Executive-level system overview and value proposition</li>
-                <li>• Validate architecture and information design</li>
-                <li>• Demonstrate integrated workflow across all modules</li>
-              </ul>
-            </div>
-            <div>
-              <div class="font-semibold mb-2">Data & Interactions</div>
-              <ul class="space-y-1">
-                <li>• All data is mocked for demonstration purposes</li>
-                <li>• Click <strong>Decision Center</strong> to explore program-level details</li>
-                <li>• Try the chatbot and data update features</li>
-              </ul>
-            </div>
-          </div>
-          <div class="mt-4 pt-4 border-t border-slate-300">
-            <div class="text-xs text-slate-600">
-              <strong>Next Steps:</strong> Schedule stakeholder demos, finalize Phase 2 requirements, establish data integration partnerships with factory teams.
-            </div>
-          </div>
+    <!-- ============================================================ -->
+    <!-- 7) IMPLEMENTATION PLAN -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-6 mb-6">
+      <div class="text-lg font-bold text-slate-900 mb-2">Implementation Plan</div>
+      <div class="text-sm text-slate-600 mb-6">FDOS development combines new system development, upgrades to existing workflows, and integration with enterprise planning platforms. The rollout prioritizes improving execution visibility and decision speed while building the orchestration layer required for the Future Smart Factory.</div>
+
+      <!-- Implementation Modules Table -->
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="text-left p-3 border border-slate-300 font-semibold text-slate-800">Functional Module</th>
+              <th class="text-left p-3 border border-slate-300 font-semibold text-slate-800">Module Type</th>
+              <th class="text-left p-3 border border-slate-300 font-semibold text-slate-800">Resources</th>
+              <th class="text-left p-3 border border-slate-300 font-semibold text-slate-800">Dev Plan</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">Overall Framework</td>
+              <td class="p-3 border border-slate-200 text-slate-700">New System Architecture</td>
+              <td class="p-3 border border-slate-200 text-slate-700">BET / MO</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded font-medium">Under discussion</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">Data Integration</td>
+              <td class="p-3 border border-slate-200 text-slate-700">Platform Integration</td>
+              <td class="p-3 border border-slate-200 text-slate-700">BET / MO</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded font-medium">Phase I: Apr-26</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">APR System (Production Planning)</td>
+              <td class="p-3 border border-slate-200 text-slate-700">System Upgrade</td>
+              <td class="p-3 border border-slate-200 text-slate-700">BET / O9</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded font-medium">Under discussion</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">Campus Planning System</td>
+              <td class="p-3 border border-slate-200 text-slate-700">New System</td>
+              <td class="p-3 border border-slate-200 text-slate-700">MO</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded font-medium">Phase I: Apr-26</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">Production Dashboard System</td>
+              <td class="p-3 border border-slate-200 text-slate-700">System Upgrade</td>
+              <td class="p-3 border border-slate-200 text-slate-700">MO</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded font-medium">Phase I: Apr-26</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">FV Cost Management System</td>
+              <td class="p-3 border border-slate-200 text-slate-700">New System</td>
+              <td class="p-3 border border-slate-200 text-slate-700">MO</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded font-medium">Phase I: May-26</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 border border-slate-200 font-medium text-slate-900">KPIs Dashboards</td>
+              <td class="p-3 border border-slate-200 text-slate-700">System Upgrade</td>
+              <td class="p-3 border border-slate-200 text-slate-700">MO / BET</td>
+              <td class="p-3 border border-slate-200"><span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded font-medium">Phase I: Apr-26</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Module Explanations -->
+      <div class="text-sm font-semibold text-slate-800 mb-3">Module Details</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">Overall Framework</div>
+          <div class="text-xs text-slate-700">Defines the FDOS system architecture and primary interface connecting execution signals with decision workflows.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">Data Integration</div>
+          <div class="text-xs text-slate-700">Builds the data pipelines that consolidate operational signals from factory systems and planning platforms.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">APR System</div>
+          <div class="text-xs text-slate-700">Enhances production planning capabilities through APS integration with O9.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">Campus Planning System</div>
+          <div class="text-xs text-slate-700">Introduces an interactive system for visualizing campus resources and simulating facility planning scenarios.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">Production Dashboard System</div>
+          <div class="text-xs text-slate-700">Improves real-time visibility of production execution metrics.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">FV Cost Management System</div>
+          <div class="text-xs text-slate-700">Automates factory variance cost tracking and analysis.</div>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="text-sm font-bold text-slate-900 mb-1">KPIs Dashboards</div>
+          <div class="text-xs text-slate-700">Standardizes operational metrics and visualizes supply chain health.</div>
         </div>
       </div>
     </div>
@@ -1704,6 +1574,29 @@ function openException(program, issue) {
   // TODO: Implement exception detail view
 }
 
+function toggleScenarioAnalysis(decisionId) {
+  console.log(`[Decision Console] Toggle scenario analysis for decision: ${decisionId}`);
+  const el = document.getElementById(`scenario-${decisionId}`);
+  if (el) {
+    el.classList.toggle('hidden');
+  }
+}
+
+function confirmDecision(decisionId, scenario) {
+  console.log(`[Decision Console] Confirm decision: ${decisionId}, scenario: ${scenario}`);
+  alert(`Decision confirmed: ${decisionId} — ${scenario}`);
+}
+
+function selectScenario(scenario) {
+  console.log(`[Decision Console] Select scenario: ${scenario}`);
+  alert(`Scenario selected: ${scenario}`);
+}
+
+function routeDecision(decisionId) {
+  console.log(`[Decision Console] Route decision: ${decisionId}`);
+  alert(`Decision routed: ${decisionId}`);
+}
+
 // ========================================
 // Decision Center Rendering
 // ========================================
@@ -1712,22 +1605,49 @@ function renderPortfolio() {
   const portfolio = STATE.data.portfolio;
 
   if (!portfolio) {
-    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Decision Center data not available</div>`;
+    $("content").innerHTML = `<div class="p-4 text-center text-slate-500">Decision Console data not available</div>`;
     return;
   }
 
   const { summary, programs, topExceptions } = portfolio;
 
-  // Calculate top drivers distribution for At-risk Units card
+  // Calculate top drivers distribution
   const driverBreakdown = calculateDriverBreakdown(programs);
+  const focusCards = generateTopFocusCards(programs);
+
+  // Hardcoded scenario options per decision card
+  const scenarioOptions = [
+    [
+      { label: 'Shift Capacity +1 Line', recovery: '+3,200 units', cost: 'Low', risk: 'Medium', complexity: 'Medium' },
+      { label: 'Partial Build (top SKUs)', recovery: '+5,000 units', cost: 'None', risk: 'Low', complexity: 'Low' },
+      { label: 'Delay Low-Priority SKU', recovery: '+7,000 units', cost: 'None', risk: 'Lowest', complexity: 'Low' },
+    ],
+    [
+      { label: 'Expedite Material', recovery: '+2,800 units', cost: 'Medium', risk: 'Low', complexity: 'Medium' },
+      { label: 'Substitute Component', recovery: '+4,200 units', cost: 'Low', risk: 'Medium', complexity: 'High' },
+      { label: 'Split Shipment', recovery: '+3,500 units', cost: 'Low', risk: 'Low', complexity: 'Low' },
+    ],
+    [
+      { label: 'Overtime Authorization', recovery: '+1,500 units', cost: 'Medium', risk: 'Low', complexity: 'Low' },
+      { label: 'Cross-Site Transfer', recovery: '+3,000 units', cost: 'Low', risk: 'Medium', complexity: 'High' },
+      { label: 'Defer to Next Week', recovery: '+4,500 units', cost: 'None', risk: 'Lowest', complexity: 'Low' },
+    ],
+  ];
+
+  // Hardcoded decision context per card
+  const decisionContexts = [
+    { constraint: 'Yield degradation', exposure: 'Assembly line output', gap: '12,400 units at risk' },
+    { constraint: 'Material shortage (CTB)', exposure: 'Production input readiness', gap: '8,000 units exposed' },
+    { constraint: 'Capacity limitation', exposure: 'Build schedule pressure', gap: '5,200 units at risk' },
+  ];
 
   const html = `
-    <!-- Page Header: Weekly Decision Triage -->
+    <!-- Page Header: Decision Console -->
     <div class="bg-white border-2 border-slate-300 rounded-xl p-6 mb-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex-1">
-          <div class="text-xl font-bold mb-2">Decision Center — Weekly Decision Triage</div>
-          <div class="text-sm text-slate-700 mb-3">Highlights where attention changes outcomes (not a performance ranking).</div>
+          <div class="text-xl font-bold mb-2">Decision Console — Execution Decisions</div>
+          <div class="text-sm text-slate-700 mb-3">Turning execution risks into structured decisions.</div>
           <div class="grid grid-cols-3 gap-4 text-xs text-slate-600">
             <div><span class="font-semibold text-slate-900">1.</span> What needs a decision this week / within 48h</div>
             <div><span class="font-semibold text-slate-900">2.</span> Who owns it + what evidence is ready</div>
@@ -1741,58 +1661,75 @@ function renderPortfolio() {
       </div>
     </div>
 
-    <!-- Signals Strip (replacing KPI Cards) -->
-    <div class="bg-white border-2 border-slate-200 rounded-xl p-4 mb-4">
-      <div class="text-xs font-semibold text-slate-700 mb-3">Weekly Signals</div>
-      <div class="space-y-2">
-        <!-- Signal 1: Commit coverage -->
-        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
-          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.commitHealth === 'GREEN' ? 'bg-green-500' : summary.commitHealth === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
-          <div class="flex-1 text-sm text-slate-700">
-            <span class="font-semibold">Commit coverage:</span> ${(summary.programsInScope * 5000).toLocaleString()} demand / ${summary.atRiskUnits.toLocaleString()} at-risk · confidence ${summary.dataConfidence || 'HIGH'} · needs ${generateTopFocusCards(programs).length} decisions
+    <!-- ============================================================ -->
+    <!-- WEEKLY EXECUTION SIGNALS -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-slate-200 rounded-xl p-5 mb-4">
+      <div class="text-sm font-semibold text-slate-800 mb-4">Weekly Execution Signals</div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Signal 1: Commit Coverage -->
+        <div class="border border-slate-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-2.5 h-2.5 rounded-full ${summary.commitHealth === 'GREEN' ? 'bg-green-500' : summary.commitHealth === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
+            <div class="text-xs font-semibold text-slate-700">Commit Coverage</div>
           </div>
+          <div class="text-lg font-bold text-slate-900 mb-1">${(summary.programsInScope * 5000).toLocaleString()} <span class="text-sm font-normal text-slate-500">demand</span></div>
+          <div class="text-sm font-semibold text-red-600">${summary.atRiskUnits.toLocaleString()} at risk</div>
+          <div class="text-xs text-slate-500 mt-1">Confidence: ${summary.dataConfidence || 'HIGH'} · ${focusCards.length} decisions needed</div>
         </div>
 
-        <!-- Signal 2: Top constraint -->
-        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
-          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.atRiskUnits > 20000 ? 'bg-red-500' : summary.atRiskUnits > 10000 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
-          <div class="flex-1 text-sm text-slate-700">
-            <span class="font-semibold">Primary constraint:</span> ${driverBreakdown.top || 'CTB (42%)'} driving most at-risk units
+        <!-- Signal 2: Primary Constraint -->
+        <div class="border border-slate-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-2.5 h-2.5 rounded-full ${summary.atRiskUnits > 20000 ? 'bg-red-500' : summary.atRiskUnits > 10000 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
+            <div class="text-xs font-semibold text-slate-700">Primary Constraint</div>
           </div>
+          <div class="text-lg font-bold text-slate-900 mb-1">${driverBreakdown.breakdown[0] ? driverBreakdown.breakdown[0].driver : 'N/A'}</div>
+          <div class="text-sm text-slate-600">${driverBreakdown.breakdown[0] ? driverBreakdown.breakdown[0].percentage + '% of at-risk' : ''}</div>
+          <div class="text-xs text-slate-500 mt-1">Driving most at-risk units</div>
         </div>
 
-        <!-- Signal 3: Inventory exposure -->
-        <div class="flex items-start gap-3 py-2 border-b border-slate-100">
-          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${summary.inventoryPressure === 'GREEN' ? 'bg-green-500' : summary.inventoryPressure === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
-          <div class="flex-1 text-sm text-slate-700">
-            <span class="font-semibold">Inventory exposure:</span> FG/WIP risk trending ${summary.inventoryPressure === 'GREEN' ? '→' : summary.inventoryPressure === 'YELLOW' ? '↑' : '↑↑'} · confidence ${summary.dataConfidence === 'HIGH' ? 'HIGH' : 'MED'} · ${summary.inventoryPressure !== 'GREEN' ? '1 review' : 'monitor'}
+        <!-- Signal 3: Inventory Exposure -->
+        <div class="border border-slate-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-2.5 h-2.5 rounded-full ${summary.inventoryPressure === 'GREEN' ? 'bg-green-500' : summary.inventoryPressure === 'YELLOW' ? 'bg-yellow-500' : 'bg-red-500'}"></div>
+            <div class="text-xs font-semibold text-slate-700">Inventory Exposure</div>
           </div>
+          <div class="text-lg font-bold text-slate-900 mb-1">${summary.inventoryPressure === 'GREEN' ? 'Stable' : summary.inventoryPressure === 'YELLOW' ? 'Elevated' : 'Critical'}</div>
+          <div class="text-sm text-slate-600">FG/WIP ${summary.inventoryPressure === 'GREEN' ? '→ flat' : summary.inventoryPressure === 'YELLOW' ? '↑ rising' : '↑↑ spiking'}</div>
+          <div class="text-xs text-slate-500 mt-1">Confidence: ${summary.dataConfidence === 'HIGH' ? 'HIGH' : 'MED'} · ${summary.inventoryPressure !== 'GREEN' ? '1 review needed' : 'monitor'}</div>
         </div>
 
-        <!-- Signal 4: System load -->
-        <div class="flex items-start gap-3 py-2">
-          <div class="flex-shrink-0 w-2 h-2 rounded-full mt-1 ${topExceptions.length > 3 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
-          <div class="flex-1 text-sm text-slate-700">
-            <span class="font-semibold">System load:</span> ${topExceptions.length} open decisions · SLA breaches: ${topExceptions.filter(ex => ex.slaHours && ex.slaHours <= 24).length}
+        <!-- Signal 4: Decision Load -->
+        <div class="border border-slate-200 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-2.5 h-2.5 rounded-full ${topExceptions.length > 3 ? 'bg-yellow-500' : 'bg-green-500'}"></div>
+            <div class="text-xs font-semibold text-slate-700">Decision Load</div>
           </div>
+          <div class="text-lg font-bold text-slate-900 mb-1">${topExceptions.length} <span class="text-sm font-normal text-slate-500">open</span></div>
+          <div class="text-sm text-slate-600">${topExceptions.filter(ex => ex.slaHours && ex.slaHours <= 24).length} SLA breaches</div>
+          <div class="text-xs text-slate-500 mt-1">${focusCards.length} priority decisions this week</div>
         </div>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- DECISION QUEUE: What needs a decision this week -->
+    <!-- PRIORITY DECISIONS -->
     <!-- ============================================================ -->
     <div class="bg-white border-2 border-blue-200 rounded-xl p-6 mb-4">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-2">
         <div>
-          <div class="text-lg font-bold text-slate-900">Decision Queue — This Week</div>
-          <div class="text-xs text-slate-600 mt-1">Ranked by Impact × Confidence × Urgency. Every card answers: Decision / Why now / Impact / Owner+SLA / Actions</div>
+          <div class="text-lg font-bold text-slate-900">Priority Decisions</div>
+          <div class="text-xs text-slate-600 mt-1">Each decision card shows the execution context, available scenarios, and the system recommendation to support structured operational decisions.</div>
         </div>
         <div class="text-xs text-slate-500">Updated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
       </div>
 
       <div class="space-y-4">
-        ${generateTopFocusCards(programs).map((focus, idx) => `
+        ${focusCards.map((focus, idx) => {
+          const scenarios = scenarioOptions[idx] || scenarioOptions[0];
+          const ctx = decisionContexts[idx] || decisionContexts[0];
+          return `
           <div class="bg-white border-2 ${focus.priority === 'HIGH' ? 'border-red-300' : focus.priority === 'MEDIUM' ? 'border-yellow-300' : 'border-blue-300'} rounded-lg p-5 hover:shadow-md transition-shadow">
             <!-- Header: Program + Priority -->
             <div class="flex items-center gap-2 mb-3">
@@ -1802,46 +1739,93 @@ function renderPortfolio() {
               <span class="px-2 py-0.5 rounded text-xs font-semibold ${focus.priority === 'HIGH' ? 'bg-red-100 text-red-800' : focus.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">${focus.priority}</span>
             </div>
 
-            <!-- Decision needed (one sentence) -->
-            <div class="mb-3">
-              <div class="text-xs font-semibold text-slate-700 mb-1">Decision:</div>
-              <div class="text-sm text-slate-900 font-medium">Protect W04 commit (${focus.whyNow})</div>
-            </div>
-
-            <!-- Why now + Impact (grid) -->
-            <div class="grid grid-cols-2 gap-4 mb-3 pb-3 border-b border-slate-200">
+            <!-- 5-Question Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4 pb-4 border-b border-slate-200">
               <div>
-                <div class="text-xs font-semibold text-slate-700 mb-1">Why now:</div>
-                <div class="text-xs text-slate-700">${focus.whyNow} · confidence <span class="font-semibold ${focus.confidence === 'HIGH' ? 'text-green-700' : focus.confidence === 'MEDIUM' ? 'text-yellow-700' : 'text-red-700'}">${focus.confidence || 'HIGH'}</span></div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Decision</div>
+                <div class="text-sm text-slate-900 font-medium">Protect W04 Commit — ${focus.program}</div>
               </div>
               <div>
-                <div class="text-xs font-semibold text-slate-700 mb-1">Impact:</div>
-                <div class="text-xs text-slate-700">${focus.impact} · SLA: <span class="font-semibold ${focus.slaHours <= 24 ? 'text-red-600' : 'text-slate-600'}">${focus.slaHours}h</span></div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Why Now</div>
+                <div class="text-xs text-slate-700">${focus.whyNow} · conf. <span class="font-semibold ${focus.confidence === 'HIGH' ? 'text-green-700' : focus.confidence === 'MEDIUM' ? 'text-yellow-700' : 'text-red-700'}">${focus.confidence || 'HIGH'}</span></div>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Impact</div>
+                <div class="text-xs text-slate-700">${focus.impact} · commit exposed</div>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Decision Window</div>
+                <div class="text-xs font-semibold ${focus.slaHours <= 24 ? 'text-red-600' : focus.slaHours <= 48 ? 'text-yellow-600' : 'text-slate-600'}">${focus.slaHours}h SLA</div>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Owner</div>
+                <div class="text-xs text-slate-700 font-medium">${focus.owner}</div>
               </div>
             </div>
 
-            <!-- Owner + Actions -->
-            <div class="flex items-center justify-between">
-              <div class="text-xs text-slate-600">
-                <span class="font-semibold">Owner:</span> ${focus.owner}
+            <!-- Decision Context -->
+            <div class="mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <div class="text-xs font-semibold text-slate-700 mb-2">Decision Context</div>
+              <div class="grid grid-cols-3 gap-3 text-xs">
+                <div>
+                  <div class="text-slate-500 mb-0.5">Primary constraint</div>
+                  <div class="font-medium text-slate-900">${ctx.constraint}</div>
+                </div>
+                <div>
+                  <div class="text-slate-500 mb-0.5">Program exposure</div>
+                  <div class="font-medium text-slate-900">${ctx.exposure}</div>
+                </div>
+                <div>
+                  <div class="text-slate-500 mb-0.5">Commit gap</div>
+                  <div class="font-medium text-slate-900">${ctx.gap}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scenario Options -->
+            <div class="mb-4">
+              <div class="text-xs font-semibold text-slate-700 mb-2">Options</div>
+              <div class="grid grid-cols-3 gap-3">
+                ${scenarios.map((s, sIdx) => `
+                  <div class="border border-slate-200 rounded-lg p-3 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition" onclick="selectScenario('${s.label}')">
+                    <div class="text-xs font-semibold text-blue-700 mb-1">Scenario ${String.fromCharCode(65 + sIdx)}</div>
+                    <div class="text-sm font-medium text-slate-900 mb-2">${s.label}</div>
+                    <div class="space-y-1 text-xs text-slate-600">
+                      <div>Recovery: <span class="font-semibold text-green-700">${s.recovery}</span></div>
+                      <div>Cost: <span class="font-semibold">${s.cost}</span></div>
+                      <div>Risk: <span class="font-semibold">${s.risk}</span></div>
+                      <div>Complexity: <span class="font-semibold">${s.complexity}</span></div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+              <div class="text-xs text-slate-500">
+                ${scenarios.length} scenarios available · Best recovery: ${scenarios.reduce((best, s) => { const v = parseInt(s.recovery.replace(/[^0-9]/g, '')); return v > best.v ? {v, l: s.label} : best; }, {v:0, l:''}).l}
               </div>
               <div class="flex gap-2">
+                <button onclick="toggleScenarioAnalysis('${focus.program.replace(/[^a-zA-Z0-9]/g, '')}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
+                  Run What-If
+                </button>
                 <button onclick="enterProgram('${focus.program}', '${focus.site || 'WF'}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
-                  [Open Plan]
+                  Open Production Plan
                 </button>
-                <button onclick="openAtRiskBreakdown()" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
-                  [Check CTB]
+                <button onclick="selectScenario('${scenarios[1] ? scenarios[1].label : scenarios[0].label}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200">
+                  Select Scenario
                 </button>
-                <button onclick="assignOrEscalate('${focus.program}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
-                  [Run What-if]
+                <button onclick="routeDecision('${focus.program}')" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
+                  Route Execution
                 </button>
               </div>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
 
-      ${generateTopFocusCards(programs).length === 0 ? `
+      ${focusCards.length === 0 ? `
         <div class="bg-white border-2 border-green-300 rounded-lg p-6 text-center">
           <div class="text-4xl mb-2">✅</div>
           <div class="text-sm font-bold text-green-900 mb-1">All Programs On Track</div>
@@ -1850,13 +1834,125 @@ function renderPortfolio() {
       ` : ''}
     </div>
 
-    <!-- Program Summary Table (Browse Layer - lightened) -->
+    <!-- ============================================================ -->
+    <!-- SCENARIO ANALYSIS (NEW) -->
+    <!-- ============================================================ -->
+    <div class="bg-white border-2 border-purple-200 rounded-xl p-6 mb-4">
+      <div class="flex items-center justify-between mb-1">
+        <div class="text-lg font-bold text-slate-900">Scenario Analysis</div>
+        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-800">Interactive</span>
+      </div>
+      <div class="text-xs text-slate-600 mb-4">${focusCards.length > 0 ? `Active decision: Protect W04 Commit — ${focusCards[0].program}` : 'No active decision selected'}</div>
+
+      <!-- Scenario Comparison Table -->
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="text-left p-3 font-semibold text-slate-700">Scenario</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Output Recovery</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Cost Impact</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Commit Risk</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Execution Complexity</th>
+              <th class="text-center p-3 font-semibold text-slate-700">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b hover:bg-slate-50 transition">
+              <td class="p-3">
+                <div class="font-semibold text-slate-900">A. Shift Capacity +1 Line</div>
+                <div class="text-xs text-slate-500">Add production line at primary site</div>
+              </td>
+              <td class="p-3 text-center font-semibold text-green-700">+3,200 units</td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">Low</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">Medium</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-yellow-100 text-yellow-800">Medium</span></td>
+              <td class="p-3 text-center">
+                <button onclick="selectScenario('Shift Capacity')" class="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200">Select</button>
+              </td>
+            </tr>
+            <tr class="border-b hover:bg-slate-50 transition bg-green-50">
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <div class="font-semibold text-slate-900">B. Partial Build (top SKUs)</div>
+                  <span class="px-1.5 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800 border border-green-300">Recommended</span>
+                </div>
+                <div class="text-xs text-slate-500">Build high-priority SKUs first</div>
+              </td>
+              <td class="p-3 text-center font-semibold text-green-700">+5,000 units</td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">None</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">Low</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">Low</span></td>
+              <td class="p-3 text-center">
+                <button onclick="selectScenario('Partial Build')" class="px-2 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">Select</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3">
+                <div class="font-semibold text-slate-900">C. Delay Low-Priority SKU</div>
+                <div class="text-xs text-slate-500">Defer lower-priority builds to next week</div>
+              </td>
+              <td class="p-3 text-center font-semibold text-green-700">+7,000 units</td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">None</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">Lowest</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-800">Low</span></td>
+              <td class="p-3 text-center">
+                <button onclick="selectScenario('Delay SKU')" class="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200">Select</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- AI Recommendation (Enhanced with reasoning) -->
+      <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-5 mb-4">
+        <div class="flex items-start gap-3">
+          <span class="text-lg">🤖</span>
+          <div class="flex-1">
+            <div class="text-xs font-semibold text-blue-800 mb-2">AI Recommendation</div>
+            <div class="text-sm text-slate-800 mb-3">Partial build reduces commit risk with minimal operational disruption.</div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <div class="bg-white border border-blue-200 rounded-lg p-2.5">
+                <div class="text-slate-500 mb-0.5">Recovered Output</div>
+                <div class="font-semibold text-green-700">+5,000 units</div>
+              </div>
+              <div class="bg-white border border-blue-200 rounded-lg p-2.5">
+                <div class="text-slate-500 mb-0.5">Cost Impact</div>
+                <div class="font-semibold text-slate-900">None</div>
+              </div>
+              <div class="bg-white border border-blue-200 rounded-lg p-2.5">
+                <div class="text-slate-500 mb-0.5">Historical Context</div>
+                <div class="font-medium text-slate-700">Similar ramp scenarios show partial build typically restores commit stability within 1 cycle.</div>
+              </div>
+              <div class="bg-white border border-blue-200 rounded-lg p-2.5">
+                <div class="text-slate-500 mb-0.5">Confidence</div>
+                <div class="font-semibold text-green-700">High</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="selectScenario('Partial Build')" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-lg border border-slate-200">
+          Select Scenario
+        </button>
+        <button onclick="routeDecision('${focusCards.length > 0 ? focusCards[0].program : 'decision'}')" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg">
+          Route Execution
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PROGRAM EXECUTION MAP -->
+    <!-- ============================================================ -->
     <div class="bg-white border rounded-xl overflow-hidden mb-4">
       <div class="p-4 border-b bg-slate-50">
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-sm font-semibold text-slate-700">Browse All Programs — Week ${portfolio.week}</div>
-            <div class="text-xs text-slate-500 mt-1">Facts + Routing layer. Click program to open detailed view.</div>
+            <div class="text-sm font-semibold text-slate-700">Program Execution Map — Week ${portfolio.week}</div>
+            <div class="text-xs text-slate-500 mt-1">All programs with commit gaps, constraints, and decision routing.</div>
           </div>
           <div class="flex gap-2">
             <button onclick="filterPrograms('at-risk')" class="px-3 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded border border-slate-200">
@@ -1873,12 +1969,11 @@ function renderPortfolio() {
         <table class="w-full text-xs">
           <thead class="bg-slate-50 border-b">
             <tr>
-              <th class="text-left p-3 font-semibold text-slate-700">Program / Sites</th>
-              <th class="text-right p-3 font-semibold text-slate-700">Gap (units)</th>
-              <th class="text-left p-3 font-semibold text-slate-700">Binding Constraint</th>
-              <th class="text-left p-3 font-semibold text-slate-700">Decision Due</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Program</th>
+              <th class="text-right p-3 font-semibold text-slate-700">Commit Gap</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Constraint</th>
+              <th class="text-left p-3 font-semibold text-slate-700">Decision Needed</th>
               <th class="text-left p-3 font-semibold text-slate-700">Owner</th>
-              <th class="text-center p-3 font-semibold text-slate-700">Open Module</th>
             </tr>
           </thead>
           <tbody>
@@ -1889,8 +1984,12 @@ function renderPortfolio() {
                 constraint === 'Yield' ? '🎯' :
                 constraint === 'Capacity' ? '🏭' :
                 constraint === 'Shipment' ? '🚚' : '📊';
-              const confidence = prog.confidence || 'HIGH';
               const statusDot = prog.commitHealth === 'GREEN' ? '🟢' : prog.commitHealth === 'YELLOW' ? '🟡' : '🔴';
+
+              // Generate decision-needed text based on constraint and health
+              const decisionText = prog.commitHealth === 'GREEN' ? 'Monitor — on track' :
+                prog.commitHealth === 'RED' ? `Resolve ${constraint} gap — escalate` :
+                `Review ${constraint} exposure`;
 
               return `
               <tr class="border-b hover:bg-blue-50 cursor-pointer transition" onclick="enterProgram('${prog.name}', '${prog.buildSites.split(',')[0].trim()}');">
@@ -1901,11 +2000,6 @@ function renderPortfolio() {
                       <div class="font-semibold text-slate-900">${prog.name}</div>
                       <div class="text-xs text-slate-500">${prog.buildSites}</div>
                     </div>
-                    ${confidence !== 'HIGH' ? `
-                      <span class="px-1.5 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">
-                        ${confidence}
-                      </span>
-                    ` : ''}
                   </div>
                 </td>
                 <td class="p-3 text-right font-semibold text-slate-900">${prog.atRiskUnits > 0 ? prog.atRiskUnits.toLocaleString() : '—'}</td>
@@ -1916,14 +2010,9 @@ function renderPortfolio() {
                   </div>
                 </td>
                 <td class="p-3">
-                  <span class="font-medium ${prog.sla === '24h' ? 'text-red-600' : prog.sla === '48h' ? 'text-yellow-600' : 'text-slate-600'}">${prog.sla}</span>
+                  <span class="text-xs ${prog.commitHealth === 'RED' ? 'text-red-700 font-semibold' : prog.commitHealth === 'YELLOW' ? 'text-yellow-700' : 'text-green-700'}">${decisionText}</span>
                 </td>
                 <td class="p-3 text-slate-700">${prog.owner}</td>
-                <td class="p-3 text-center">
-                  <button onclick="enterProgram('${prog.name}', '${prog.buildSites.split(',')[0].trim()}'); event.stopPropagation();" class="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200">
-                    Production Plan
-                  </button>
-                </td>
               </tr>
             `}).join('')}
           </tbody>
@@ -1931,17 +2020,21 @@ function renderPortfolio() {
       </div>
     </div>
 
-    <!-- Top Exceptions (Evidence-backed) -->
+    <!-- ============================================================ -->
+    <!-- TOP EXCEPTIONS — EVIDENCE-BACKED ROUTING -->
+    <!-- ============================================================ -->
     <div class="bg-white border rounded-xl p-6">
       <div class="text-sm font-semibold mb-2">Top Exceptions — Evidence-Backed Routing</div>
-      <div class="text-xs text-slate-500 mb-4">Every exception shows: Decision / Evidence ready / Threatens outcome / Owner+SLA / Actions</div>
+      <div class="text-xs text-slate-500 mb-4">Each exception shows the detected threat, available evidence, evidence status, and execution routing.</div>
 
       <div class="space-y-4">
         ${topExceptions.map((ex, idx) => {
-          // Determine what outcome this threatens
           const threatenedOutcome = ex.issue.toLowerCase().includes('ctb') || ex.issue.toLowerCase().includes('material') ? 'Commit fulfillment' :
                                     ex.issue.toLowerCase().includes('yield') ? 'Output quality' :
                                     ex.issue.toLowerCase().includes('ship') ? 'Delivery timing' : 'Plan execution';
+          const hasEvidence = ex.evidence && ex.evidence.length > 0;
+          const evidenceStatus = hasEvidence && ex.evidence.length >= 2 ? 'Validated' : hasEvidence ? 'Partial — needs review' : 'Needs validation';
+          const evidenceStatusColor = evidenceStatus === 'Validated' ? 'text-green-700 bg-green-50 border-green-200' : evidenceStatus.includes('Partial') ? 'text-yellow-700 bg-yellow-50 border-yellow-200' : 'text-red-700 bg-red-50 border-red-200';
 
           return `
           <div class="border-2 ${ex.severity === 'HIGH' ? 'border-red-300 bg-red-50' : ex.severity === 'MED' ? 'border-yellow-300 bg-yellow-50' : 'border-blue-300 bg-blue-50'} rounded-lg p-4">
@@ -1955,64 +2048,56 @@ function renderPortfolio() {
                     <span class="px-2 py-0.5 rounded text-xs font-semibold ${ex.severity === 'HIGH' ? 'bg-red-100 text-red-800' : ex.severity === 'MED' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">
                       ${ex.severity}
                     </span>
-                    ${ex.confidence ? `
-                      <span class="px-2 py-0.5 rounded text-xs font-semibold ${ex.confidence === 'HIGH' ? 'bg-green-100 text-green-700' : ex.confidence === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'} border ${ex.confidence === 'HIGH' ? 'border-green-300' : ex.confidence === 'MEDIUM' ? 'border-yellow-300' : 'border-red-300'}">
-                        ${ex.confidence}
-                      </span>
-                    ` : ''}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Exception details grid -->
-            <div class="grid grid-cols-2 gap-3 mb-3">
-              <!-- Decision needed -->
+            <!-- Structured fields: Exception / Threat / Evidence / Evidence Status / Routing -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
               <div class="bg-white border border-slate-200 rounded p-3">
-                <div class="text-xs font-semibold text-slate-700 mb-1">Exception:</div>
-                <div class="text-xs text-slate-900">${ex.decisionNeeded || ex.issue}</div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Exception</div>
+                <div class="text-xs text-slate-900 font-medium">${ex.decisionNeeded || ex.issue}</div>
               </div>
-
-              <!-- Threatens -->
               <div class="bg-white border border-slate-200 rounded p-3">
-                <div class="text-xs font-semibold text-slate-700 mb-1">Threatens:</div>
-                <div class="text-xs text-slate-900 font-medium">${threatenedOutcome}</div>
+                <div class="text-xs font-semibold text-slate-500 mb-1">Threat</div>
+                <div class="text-xs text-slate-900">${threatenedOutcome}</div>
+              </div>
+              <div class="bg-white border border-slate-200 rounded p-3">
+                <div class="text-xs font-semibold text-slate-500 mb-1">Evidence</div>
+                ${hasEvidence ? `
+                  <div class="space-y-0.5">
+                    ${ex.evidence.slice(0, 3).map(e => `
+                      <div class="text-xs text-slate-700 flex items-center gap-1">
+                        <span class="text-green-600">✅</span>
+                        <span>${e.split(':')[0] || e}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div class="text-xs text-amber-800">⚠️ No evidence collected</div>
+                `}
+              </div>
+              <div class="bg-white border border-slate-200 rounded p-3">
+                <div class="text-xs font-semibold text-slate-500 mb-1">Evidence Status</div>
+                <div class="text-xs font-semibold px-2 py-0.5 rounded border inline-block ${evidenceStatusColor}">${evidenceStatus}</div>
               </div>
             </div>
 
-            <!-- Evidence ready -->
-            ${ex.evidence && ex.evidence.length > 0 ? `
-              <div class="mb-3 bg-white border border-slate-200 rounded p-3">
-                <div class="text-xs font-semibold text-slate-700 mb-2">Evidence:</div>
-                <div class="flex items-center gap-3 flex-wrap">
-                  ${ex.evidence.slice(0, 3).map(e => `
-                    <div class="text-xs text-slate-700 flex items-center gap-1">
-                      <span class="text-green-600">✅</span>
-                      <span>${e.split(':')[0] || e}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            ` : `
-              <div class="mb-3 bg-white border border-amber-200 rounded p-3">
-                <div class="text-xs text-amber-800">⚠️ Evidence incomplete — needs validation before routing</div>
-              </div>
-            `}
-
-            <!-- Routing: Owner + SLA + Actions -->
+            <!-- Routing + Actions -->
             <div class="flex items-center justify-between pt-3 border-t border-slate-200">
               <div class="text-xs text-slate-600">
-                <span class="font-semibold">Routing to:</span> ${ex.owner || 'Unassigned'} ·
+                <span class="font-semibold">Routing:</span> ${ex.owner || 'Unassigned'} ·
                 <span class="font-semibold ${ex.slaHours && ex.slaHours <= 24 ? 'text-red-600' : 'text-slate-600'}">
                   SLA ${ex.sla || ex.slaHours ? ex.slaHours + 'h' : 'TBD'}
                 </span>
               </div>
               <div class="flex gap-2">
                 <button onclick="openException('${ex.program}', '${ex.issue}')" class="px-2 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded border border-slate-200">
-                  [Open evidence]
+                  Open Evidence
                 </button>
-                <button onclick="enterProgram('${ex.program}', 'WF')" class="px-2 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
-                  [Open plan]
+                <button onclick="routeDecision('${ex.program}')" class="px-2 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded">
+                  Route Exception
                 </button>
               </div>
             </div>
@@ -4019,8 +4104,9 @@ function renderProductionPlan() {
       const storedSubpage = localStorage.getItem('productionPlan_activeSubpage');
 
       if (storedTab) {
-        savedTab = storedTab;
-        console.log('[Production Plan] Restored activeTab from localStorage:', storedTab);
+        // Redirect removed 'library' tab to 'simulations'
+        savedTab = storedTab === 'library' ? 'simulations' : storedTab;
+        console.log('[Production Plan] Restored activeTab from localStorage:', savedTab);
       }
 
       if (storedSubpage) {
@@ -4039,8 +4125,8 @@ function renderProductionPlan() {
       mode: 'unconstrained',
       planResults: null,
       engine: null,
-      activeTab: savedTab, // 'generate' | 'library' | 'por' | 'history'
-      activeSubpage: savedSubpage // 'latest' | 'generate' (subpage within generate tab)
+      activeTab: savedTab, // 'generate' | 'por' | 'history'
+      activeSubpage: savedSubpage // legacy, kept for compatibility
     };
   }
 
@@ -4053,7 +4139,7 @@ function renderProductionPlan() {
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-bold text-gray-800">Production Plan</h2>
-          <p class="text-sm text-gray-600 mt-1">Generate simulations, manage versions, and promote to POR</p>
+          <p class="text-sm text-gray-600 mt-1">Define assumptions, run simulations, and compare scenarios.</p>
         </div>
         <div class="px-3 py-1 bg-purple-100 border border-purple-300 rounded-lg">
           <span class="text-xs font-mono font-semibold text-purple-700">v2.2.5</span>
@@ -4066,12 +4152,12 @@ function renderProductionPlan() {
           <button
             onclick="switchProductionPlanTab('generate')"
             class="tab-button ${state.activeTab === 'generate' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            ⭐ Generate New Simulation
+            ⭐ Production Planning
           </button>
           <button
-            onclick="switchProductionPlanTab('library')"
-            class="tab-button ${state.activeTab === 'library' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            📚 Simulation Library
+            onclick="switchProductionPlanTab('simulations')"
+            class="tab-button ${state.activeTab === 'simulations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            🧪 Simulations
           </button>
           <button
             onclick="switchProductionPlanTab('por')"
@@ -4102,15 +4188,10 @@ function renderProductionPlan() {
   // Render active tab content
   switch (state.activeTab) {
     case 'generate':
-      // Within generate tab, check activeSubpage
-      if (state.activeSubpage === 'latest') {
-        renderProductionPlanLatest();
-      } else {
-        renderProductionPlanGenerate();
-      }
+      renderProductionPlanMerged();
       break;
-    case 'library':
-      renderSimulationLibrary();
+    case 'simulations':
+      renderSimulationsTab();
       break;
     case 'por':
       renderCurrentPOR();
@@ -4119,8 +4200,7 @@ function renderProductionPlan() {
       renderPORHistory();
       break;
     default:
-      // Default to latest production plan
-      renderProductionPlanLatest();
+      renderProductionPlanMerged();
   }
 }
 
@@ -4138,6 +4218,1256 @@ window.switchProductionPlanTab = function(tabName) {
 
   renderProductionPlan();
 };
+
+// Simulations Tab — Latest Simulation + Simulation Library
+function renderSimulationsTab() {
+  var tabContent = document.getElementById('tabContent');
+  if (!tabContent) return;
+
+  var state = window.productionPlanState;
+
+  // --- Build Latest Simulation HTML (reuses plan results from state) ---
+  var latestSimHtml = '';
+  if (state.planResults) {
+    var isCombinedMode = state.planResults.mode === 'combined';
+    var results = isCombinedMode ? state.planResults.unconstrained : state.planResults;
+    var resultsConstrained = isCombinedMode ? state.planResults.constrained : null;
+    var weeklyMetrics = (results && results.weeklyMetrics) ? results.weeklyMetrics : [];
+    var granularity = state.viewGranularity || 'weekly';
+    var periodLabel = granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly';
+    var dateColLabel = granularity === 'daily' ? 'Date' : granularity === 'weekly' ? 'Week' : 'Month';
+
+    var currentData = [];
+    var hasMoreData = false;
+
+    if (results && results.programResults) {
+      var today = new Date();
+      var currentWeekStart = new Date(today);
+      currentWeekStart.setDate(today.getDate() - today.getDay());
+
+      if (granularity === 'weekly') {
+        currentData = weeklyMetrics.slice(0, 4);
+        hasMoreData = weeklyMetrics.length > 4;
+      } else if (granularity === 'monthly') {
+        var monthlyData = aggregateByMonth(results.programResults);
+        var currentMonth = today.getMonth() + 1;
+        var currentYear = today.getFullYear();
+        currentData = monthlyData.filter(function(m) {
+          if (!m.month_id) return false;
+          var parts = m.month_id.split('-').map(Number);
+          return parts[0] === currentYear && parts[1] >= currentMonth;
+        });
+        hasMoreData = monthlyData.length > currentData.length;
+      } else {
+        var twoWeeksLater = new Date(currentWeekStart);
+        twoWeeksLater.setDate(currentWeekStart.getDate() + 14);
+        var twoWeeksLaterStr = twoWeeksLater.toISOString().split('T')[0];
+        var currentWeekStartStr = currentWeekStart.toISOString().split('T')[0];
+        currentData = results.programResults.filter(function(d) {
+          return d.date >= currentWeekStartStr && d.date < twoWeeksLaterStr;
+        });
+        hasMoreData = results.programResults.length > currentData.length;
+      }
+    }
+
+    var thisWeekSaturday = '2026-01-25';
+    var yearEnd = '2026-12-31';
+    var weekSummary = results && results.programResults ?
+      calculateCutoffSummary(results.programResults, thisWeekSaturday) :
+      { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+    var yearSummary = results && results.programResults ?
+      calculateCutoffSummary(results.programResults, yearEnd) :
+      { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+    var constraintAnalysis = results && results.programResults ?
+      analyzePrimaryConstraint(results.programResults) :
+      { primaryConstraint: 'Mixed', ctbLimitedDays: 0, capacityLimitedDays: 0, ctbLimitedUnits: 0, capacityLimitedUnits: 0, ctbLimitedPct: '0', capacityLimitedPct: '0' };
+
+    var porBadgeHtml = '';
+    var porVersion = typeof getCurrentPOR === 'function' ? getCurrentPOR() : null;
+    if (porVersion) {
+      porBadgeHtml = '<div class="border-l pl-4">' +
+        '<div class="text-xs text-slate-600 mb-1">Plan of Record</div>' +
+        '<div class="flex items-center gap-2">' +
+        '<span class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs rounded font-bold">★ POR</span>' +
+        '<span class="font-semibold text-slate-900 text-xs">' + porVersion.version + '</span>' +
+        '</div></div>';
+    }
+
+    var constraintDesc = '';
+    if (constraintAnalysis.primaryConstraint === 'CTB') {
+      constraintDesc = 'CTB limited ' + constraintAnalysis.ctbLimitedPct + '% of days (' + constraintAnalysis.ctbLimitedUnits.toLocaleString() + ' units short)';
+    } else if (constraintAnalysis.primaryConstraint === 'Capacity') {
+      constraintDesc = 'Capacity limited ' + constraintAnalysis.capacityLimitedPct + '% of days (' + constraintAnalysis.capacityLimitedUnits.toLocaleString() + ' units short)';
+    } else {
+      constraintDesc = 'Both capacity and materials are sufficient';
+    }
+
+    var constrainedHeaderGroup = '';
+    var constrainedSubHeaders = '';
+    if (isCombinedMode) {
+      constrainedHeaderGroup = '<th class="px-2 py-2 text-center font-bold border-r-2 bg-purple-50" colspan="6">Reality Track<br/><span class="text-xs font-normal">(Constrained)</span></th>';
+      constrainedSubHeaders =
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Input</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Input</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Output</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Output</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Ship</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50 border-r-2">Cum<br/>Ship</th>';
+    }
+
+    var truthTableRows = currentData.map(function(row, idx) {
+      var dateLabel = granularity === 'daily' ? row.date :
+                       granularity === 'weekly' ? getWeekDisplayDate(row.week_id) : row.month_id;
+      var isSunday = granularity === 'daily' && DateUtils.isSunday(row.date);
+      var cumForecast = row.cum_demand || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + (r.demand || 0); }, 0) : row.demand || 0);
+      var cumCTB = idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((r.ctb_available || r.capacity_unconstrained) || 0); }, 0) : (row.ctb_available || row.capacity_unconstrained || 0);
+      var cumCapacity = idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + (r.capacity_unconstrained || 0); }, 0) : (row.capacity_unconstrained || 0);
+      var dailyInput = granularity === 'daily' ? (row.input_final || 0) : (row.input || 0);
+      var cumInput = row.cum_input || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.input_final : r.input) || 0); }, 0) : dailyInput);
+      var dailyOutput = granularity === 'daily' ? (row.output_final || 0) : (row.output || 0);
+      var cumOutput = row.cum_output || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.output_final : r.output) || 0); }, 0) : dailyOutput);
+      var dailyShip = granularity === 'daily' ? (row.shipment_final || 0) : (row.shipments || 0);
+      var cumShip = row.cum_shipment || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.shipment_final : r.shipments) || 0); }, 0) : dailyShip);
+      var gap = cumShip - cumForecast;
+      var bindingDriver = granularity === 'daily' ? getDailyConstraint(row) : '-';
+
+      var constrainedCells = '';
+      if (isCombinedMode && resultsConstrained) {
+        var constrainedData = granularity === 'weekly' ?
+          resultsConstrained.weeklyMetrics : granularity === 'monthly' ?
+          aggregateByMonth(resultsConstrained.programResults) : resultsConstrained.programResults;
+        var rowC = constrainedData[idx];
+        if (rowC) {
+          var dIC = granularity === 'daily' ? (rowC.input_final || 0) : (rowC.input || 0);
+          var cIC = rowC.cum_input || dIC;
+          var dOC = granularity === 'daily' ? (rowC.output_final || 0) : (rowC.output || 0);
+          var cOC = rowC.cum_output || dOC;
+          var dSC = granularity === 'daily' ? (rowC.shipment_final || 0) : (rowC.shipments || 0);
+          var cSC = rowC.cum_shipment || dSC;
+          constrainedCells =
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(dIC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(cIC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(dOC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(cOC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold">' + Math.round(dSC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold border-r-2">' + Math.round(cSC).toLocaleString() + '</td>';
+        }
+      }
+
+      var bgColor = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+      var gapColor = gap >= 0 ? 'text-green-700' : 'text-red-700';
+      var driverColor = bindingDriver === 'CTB' ? 'text-orange-700' : bindingDriver === 'Capacity' ? 'text-red-700' : 'text-slate-500';
+
+      return '<tr class="' + bgColor + (isSunday ? ' text-slate-400' : '') + ' hover:bg-blue-50 border-b">' +
+        '<td class="px-2 py-2 font-mono text-xs border-r-2">' + dateLabel + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumForecast).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono border-r-2">' + Math.round(cumCTB).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(row.capacity_unconstrained || 0).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono border-r-2">' + Math.round(cumCapacity).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(dailyInput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumInput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(dailyOutput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumOutput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono text-blue-700">' + Math.round(dailyShip).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono text-blue-700' + (isCombinedMode ? '' : ' border-r-2') + '">' + Math.round(cumShip).toLocaleString() + '</td>' +
+        constrainedCells +
+        '<td class="px-2 py-2 text-right font-mono ' + gapColor + ' font-semibold">' + (gap >= 0 ? '+' : '') + Math.round(gap).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-center text-xs font-semibold ' + driverColor + '">' + bindingDriver + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var constraintColor = constraintAnalysis.primaryConstraint === 'CTB' ? 'text-orange-700' : constraintAnalysis.primaryConstraint === 'Capacity' ? 'text-red-700' : 'text-green-700';
+    var constraintLabel = constraintAnalysis.primaryConstraint === 'CTB' ? '📦 CTB-limited' : constraintAnalysis.primaryConstraint === 'Capacity' ? '⚙️ Capacity-limited' : '✅ No binding constraint';
+    var yearGapColor = yearSummary.gap >= 0 ? 'text-green-700' : 'text-red-700';
+    var weekGapColor = weekSummary.gap >= 0 ? 'text-green-700' : 'text-red-700';
+    var combinedModeLabel = isCombinedMode ? '<span class="ml-2 text-xs font-normal text-blue-600">(Combined View: Unconstrained vs Constrained)</span>' : '';
+    var realityTrackLabel = isCombinedMode ? 'Reality Track<br/><span class="text-xs font-normal">(Unconstrained)</span>' : 'Reality Track';
+    var cumShipBorderClass = isCombinedMode ? '' : ' border-r-2';
+
+    latestSimHtml =
+      '<div class="space-y-6">' +
+      '<div class="bg-white border rounded-xl p-4">' +
+        '<div class="flex items-center justify-between flex-wrap gap-3">' +
+          '<div class="flex items-center gap-4">' +
+            '<div><div class="text-xs text-slate-600 mb-1">Program</div><div class="font-semibold text-slate-900">Product A</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Date Range</div><div class="font-semibold text-slate-900">' + state.startDate + ' to ' + state.endDate + '</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Sites</div><div class="font-semibold text-slate-900">' + (state.site === 'all' ? 'All Sites' : state.site) + '</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Last Updated</div><div class="font-semibold text-slate-900">' + new Date().toLocaleString() + '</div></div>' +
+            porBadgeHtml +
+          '</div>' +
+          '<div class="flex items-center gap-2">' +
+            '<button onclick="exportLatestProductionPlan()" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700">📊 Export Excel</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-6">' +
+        '<div class="border-2 border-blue-300 bg-blue-50 rounded-xl p-5 shadow-sm">' +
+          '<div class="text-sm font-bold text-blue-900 mb-4">Cut-off: This Week</div>' +
+          '<div class="space-y-3">' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Forecast</span><span class="text-lg font-bold text-slate-900">' + (weekSummary.cumForecast / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Ship</span><span class="text-lg font-bold text-blue-700">' + (weekSummary.cumShip / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline border-t-2 border-blue-200 pt-3 mt-3"><span class="text-xs text-slate-700">Gap</span><span class="text-lg font-bold ' + weekGapColor + '">' + (weekSummary.gap >= 0 ? '+' : '') + (weekSummary.gap / 1000).toFixed(1) + 'k</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="border-2 border-slate-300 bg-slate-50 rounded-xl p-5 shadow-sm">' +
+          '<div class="text-sm font-bold text-slate-900 mb-4">Cut-off: Year End</div>' +
+          '<div class="space-y-3">' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Forecast</span><span class="text-lg font-bold text-slate-900">' + (yearSummary.cumForecast / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Ship</span><span class="text-lg font-bold text-blue-700">' + (yearSummary.cumShip / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline border-t-2 border-slate-200 pt-3 mt-3"><span class="text-xs text-slate-700">Gap</span><span class="text-lg font-bold ' + yearGapColor + '">' + (yearSummary.gap >= 0 ? '+' : '') + (yearSummary.gap / 1000).toFixed(1) + 'k</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bg-white border-2 rounded-xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between flex-wrap gap-3">' +
+          '<div><div class="text-xs font-bold text-slate-500 mb-1">PRIMARY BINDING CONSTRAINT</div><div class="text-lg font-bold ' + constraintColor + '">' + constraintLabel + '</div></div>' +
+          '<div><div class="text-xs font-bold text-slate-500 mb-1">GAP (YEAR END)</div><div class="text-lg font-bold ' + yearGapColor + '">' + (yearSummary.gap >= 0 ? '+' : '') + (yearSummary.gap / 1000).toFixed(1) + 'k units</div></div>' +
+          '<div class="text-sm text-slate-600">' + constraintDesc + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="flex items-center justify-between">' +
+        '<div class="flex items-center gap-3">' +
+          '<span class="text-sm font-semibold text-slate-700">View:</span>' +
+          '<div class="flex gap-2">' +
+            '<button onclick="switchPlanGranularity(\'daily\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'daily' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Daily</button>' +
+            '<button onclick="switchPlanGranularity(\'weekly\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'weekly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Weekly</button>' +
+            '<button onclick="switchPlanGranularity(\'monthly\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'monthly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Monthly</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex gap-2"><button onclick="viewLatestPlanFullReport()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-purple-700 transition">📊 View Full Report</button></div>' +
+      '</div>' +
+      '<div class="bg-white border-2 rounded-xl p-6 shadow-sm">' +
+        '<div class="text-sm font-bold text-slate-900 mb-4">Production Plan Truth Table ' + combinedModeLabel + '</div>' +
+        '<div class="overflow-x-auto">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead class="bg-slate-100">' +
+              '<tr class="border-b-2">' +
+                '<th class="px-2 py-2 text-left font-bold border-r-2" rowspan="2">' + dateColLabel + '</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-slate-200" colspan="2">Demand / Supply</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-blue-50" colspan="2">Capacity Track</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-green-50" colspan="6">' + realityTrackLabel + '</th>' +
+                constrainedHeaderGroup +
+                '<th class="px-2 py-2 text-center font-bold bg-orange-50" colspan="2">Gap / Constraint</th>' +
+              '</tr>' +
+              '<tr class="border-b-2">' +
+                '<th class="px-2 py-2 text-right font-semibold bg-slate-200">Cum<br/>Forecast</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-slate-200 border-r-2">Cum<br/>CTB</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-blue-50">' + periodLabel + '<br/>Capacity</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-blue-50 border-r-2">Cum<br/>Capacity</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Input</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Input</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Output</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Output</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Ship</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50' + cumShipBorderClass + '">Cum<br/>Ship</th>' +
+                constrainedSubHeaders +
+                '<th class="px-2 py-2 text-right font-semibold bg-orange-50">Gap<br/>(Cum)</th>' +
+                '<th class="px-2 py-2 text-center font-semibold bg-orange-50">Binding<br/>Driver</th>' +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' + truthTableRows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  // --- Build Simulation Library HTML ---
+  var simLibHtml = (function() {
+    var projects = SimulationManager.getProjects();
+    var allSimulations = SimulationManager.getSimulations();
+    var projectSimIds = new Set();
+    projects.forEach(function(proj) { proj.simulationIds.forEach(function(id) { projectSimIds.add(id); }); });
+    var standaloneSimulations = allSimulations.filter(function(sim) { return !projectSimIds.has(sim.id); });
+
+    var formatNumber = function(num) { return num.toLocaleString('en-US'); };
+    var formatDate = function(dateStr) {
+      var date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    var renderSimCard = function(sim, showVariantButton, projectId) {
+      var summary = sim.results.summary;
+      var weeklyM = sim.results.weeklyMetrics;
+      var weeksWithGap = weeklyM.filter(function(w) { return w.gap < 0; });
+      var gapColor = weeksWithGap.length === 0 ? 'text-green-600' : 'text-red-600';
+
+      var variantBtn = '';
+      if (showVariantButton && projectId) {
+        variantBtn = '<button onclick="createVariantFromSimulation(\'' + projectId + '\', \'' + sim.id + '\')" class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">+ Create Variant</button>';
+      }
+
+      return '<div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition">' +
+        '<div class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">' +
+          '<div class="flex items-start justify-between">' +
+            '<div class="flex-1"><h4 class="font-semibold text-gray-800 mb-1">' + sim.name + '</h4>' +
+            (sim.description ? '<p class="text-xs text-gray-600">' + sim.description + '</p>' : '') +
+            '</div><span class="text-2xl">📊</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="p-4 space-y-2 text-sm border-b border-gray-100">' +
+          '<div class="flex justify-between"><span class="text-gray-600">Created:</span><span class="font-medium text-gray-800">' + formatDate(sim.createdAt) + '</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Output:</span><span class="font-medium text-gray-800">' + formatNumber(summary.totalOutput) + ' units</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Attainment:</span><span class="font-medium text-gray-800">' + summary.overallAttainment.toFixed(1) + '%</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Gap Weeks:</span><span class="font-medium ' + gapColor + '">' + weeksWithGap.length + '</span></div>' +
+        '</div>' +
+        '<div class="p-4 border-t border-gray-200 space-y-2">' +
+          '<button onclick="viewSimulationReport(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">View Report</button>' +
+          variantBtn +
+          '<button onclick="promptPromoteSimulationToPOR(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm font-medium">⬆️ Promote to POR</button>' +
+          '<button onclick="confirmDeleteSimulation(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">🗑️ Delete</button>' +
+        '</div>' +
+      '</div>';
+    };
+
+    if (projects.length === 0 && allSimulations.length === 0) {
+      return '<div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">' +
+        '<div class="text-gray-400 text-4xl mb-3">📊</div>' +
+        '<h4 class="text-md font-semibold text-gray-700 mb-2">No Simulations Yet</h4>' +
+        '<p class="text-gray-600 text-sm">Go to Production Planning tab, configure your plan, then click "Generate New Simulation".</p>' +
+      '</div>';
+    }
+
+    var html = '';
+    if (projects.length > 0) {
+      html += '<div class="mb-6"><h4 class="text-md font-semibold text-gray-700 mb-4">📁 Projects</h4><div class="space-y-6">';
+      projects.forEach(function(project) {
+        var sims = SimulationManager.getProjectSimulations(project.id);
+        html += '<div class="border-2 border-purple-200 rounded-xl bg-purple-50/50 overflow-hidden">';
+        html += '<div class="p-4 bg-gradient-to-r from-purple-100 to-pink-100 border-b border-purple-200">' +
+          '<div class="flex items-center justify-between">' +
+            '<div class="flex-1"><h5 class="font-bold text-purple-900">' + project.name + '</h5>' +
+            (project.description ? '<p class="text-sm text-purple-700 mt-1">' + project.description + '</p>' : '') +
+            '<p class="text-xs text-purple-600 mt-1">' + sims.length + ' simulation' + (sims.length !== 1 ? 's' : '') + ' • Created ' + formatDate(project.createdAt) + '</p></div>' +
+            '<button onclick="deleteProject(\'' + project.id + '\')" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm">Delete Project</button>' +
+          '</div></div>';
+        if (sims.length === 0) {
+          html += '<div class="p-8 text-center"><p class="text-gray-500 text-sm">No simulations in this project yet</p></div>';
+        } else {
+          html += '<div class="p-4"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+          sims.forEach(function(sim) { html += renderSimCard(sim, true, project.id); });
+          html += '</div></div>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    if (standaloneSimulations.length > 0) {
+      html += '<div><h4 class="text-md font-semibold text-gray-700 mb-4">🔬 Standalone Simulations</h4>' +
+        '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+      standaloneSimulations.forEach(function(sim) { html += renderSimCard(sim, false, null); });
+      html += '</div></div>';
+    }
+
+    return html;
+  })();
+
+  // --- Render full tab ---
+  tabContent.innerHTML =
+    '<div class="space-y-8">' +
+
+    // Latest Simulation section
+    '<div>' +
+      '<div class="mb-4">' +
+        '<h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">' +
+          '<span class="w-8 h-8 bg-green-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">1</span>' +
+          'Latest Simulation' +
+        '</h3>' +
+        '<p class="text-sm text-slate-600 mt-1 ml-10">Most recent simulation output, summary metrics, and truth table.</p>' +
+      '</div>' +
+      (latestSimHtml || '<div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">' +
+        '<div class="text-gray-400 text-5xl mb-4">📊</div>' +
+        '<h4 class="text-lg font-semibold text-gray-700 mb-2">No Simulation Generated Yet</h4>' +
+        '<p class="text-gray-600 mb-4">Go to the <button onclick="switchProductionPlanTab(\'generate\')" class="text-blue-600 font-semibold hover:underline" style="cursor:pointer;">Production Planning</button> tab, configure your plan, then click "Generate New Simulation".</p>' +
+      '</div>') +
+    '</div>' +
+
+    // Simulation Library section
+    '<div>' +
+      '<div class="mb-4 flex items-center justify-between">' +
+        '<div>' +
+          '<h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">' +
+            '<span class="w-8 h-8 bg-purple-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">2</span>' +
+            'Simulation Library' +
+          '</h3>' +
+          '<p class="text-sm text-slate-600 mt-1 ml-10">Saved simulations ready to promote to POR.</p>' +
+        '</div>' +
+        '<div class="flex gap-2">' +
+          '<button onclick="openCreateProjectDialog()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">+ New Project</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="space-y-4">' + simLibHtml + '</div>' +
+    '</div>' +
+
+    '</div>';
+}
+
+// 2.0 Merged Production Planning Page (single scrollable view)
+function renderProductionPlanMerged() {
+  const tabContent = document.getElementById('tabContent');
+  if (!tabContent) return;
+
+  const state = window.productionPlanState;
+
+  // Initialize engine with seed data if not exists
+  if (!state.engine) {
+    state.engine = new ProductionPlanEngine(PRODUCTION_PLAN_SEED_DATA);
+  }
+
+  // Load latest forecast data from localStorage
+  const forecastVersions = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+  if (forecastVersions.length > 0) {
+    const latestForecast = forecastVersions[forecastVersions.length - 1];
+    PRODUCTION_PLAN_SEED_DATA.weeklyDemand = latestForecast.data.map(function(row) {
+      return {
+        week_id: row.week_id,
+        program_id: 'product_a',
+        demand_qty: row.weekly_forecast,
+        notes: 'From ' + latestForecast.fileName
+      };
+    });
+  }
+
+  // --- Plan Results computation (only if results exist) ---
+  var planResultsHtml = '';
+
+  if (state.planResults) {
+    var isCombinedMode = state.planResults.mode === 'combined';
+    var results = isCombinedMode ? state.planResults.unconstrained : state.planResults;
+    var resultsConstrained = isCombinedMode ? state.planResults.constrained : null;
+    var weeklyMetrics = (results && results.weeklyMetrics) ? results.weeklyMetrics : [];
+    var granularity = state.viewGranularity || 'weekly';
+    var periodLabel = granularity === 'daily' ? 'Daily' : granularity === 'weekly' ? 'Weekly' : 'Monthly';
+    var dateColLabel = granularity === 'daily' ? 'Date' : granularity === 'weekly' ? 'Week' : 'Month';
+
+    var currentData = [];
+    var hasMoreData = false;
+
+    if (results && results.programResults) {
+      var today = new Date();
+      var currentWeekStart = new Date(today);
+      currentWeekStart.setDate(today.getDate() - today.getDay());
+
+      if (granularity === 'weekly') {
+        currentData = weeklyMetrics.slice(0, 4);
+        hasMoreData = weeklyMetrics.length > 4;
+      } else if (granularity === 'monthly') {
+        var monthlyData = aggregateByMonth(results.programResults);
+        var currentMonth = today.getMonth() + 1;
+        var currentYear = today.getFullYear();
+        currentData = monthlyData.filter(function(m) {
+          if (!m.month_id) return false;
+          var parts = m.month_id.split('-').map(Number);
+          return parts[0] === currentYear && parts[1] >= currentMonth;
+        });
+        hasMoreData = monthlyData.length > currentData.length;
+      } else {
+        var twoWeeksLater = new Date(currentWeekStart);
+        twoWeeksLater.setDate(currentWeekStart.getDate() + 14);
+        var twoWeeksLaterStr = twoWeeksLater.toISOString().split('T')[0];
+        var currentWeekStartStr = currentWeekStart.toISOString().split('T')[0];
+        currentData = results.programResults.filter(function(d) {
+          return d.date >= currentWeekStartStr && d.date < twoWeeksLaterStr;
+        });
+        hasMoreData = results.programResults.length > currentData.length;
+      }
+    }
+
+    state.hasMoreData = hasMoreData;
+
+    var thisWeekSaturday = '2026-01-25';
+    var yearEnd = '2026-12-31';
+    var weekSummary = results && results.programResults ?
+      calculateCutoffSummary(results.programResults, thisWeekSaturday) :
+      { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+    var yearSummary = results && results.programResults ?
+      calculateCutoffSummary(results.programResults, yearEnd) :
+      { cumForecast: 0, cumCTB: 0, cumCapacity: 0, cumShip: 0, gap: 0 };
+    var constraintAnalysis = results && results.programResults ?
+      analyzePrimaryConstraint(results.programResults) :
+      { primaryConstraint: 'Mixed', ctbLimitedDays: 0, capacityLimitedDays: 0, ctbLimitedUnits: 0, capacityLimitedUnits: 0, ctbLimitedPct: '0', capacityLimitedPct: '0' };
+
+    // Build POR badge HTML
+    var porBadgeHtml = '';
+    var porVersion = typeof getCurrentPOR === 'function' ? getCurrentPOR() : null;
+    if (porVersion) {
+      porBadgeHtml = '<div class="border-l pl-4">' +
+        '<div class="text-xs text-slate-600 mb-1">Plan of Record</div>' +
+        '<div class="flex items-center gap-2">' +
+        '<span class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs rounded font-bold">★ POR</span>' +
+        '<span class="font-semibold text-slate-900 text-xs">' + porVersion.version + '</span>' +
+        '</div></div>';
+    }
+
+    // Build constraint description
+    var constraintDesc = '';
+    if (constraintAnalysis.primaryConstraint === 'CTB') {
+      constraintDesc = 'CTB limited ' + constraintAnalysis.ctbLimitedPct + '% of days (' + constraintAnalysis.ctbLimitedUnits.toLocaleString() + ' units short)';
+    } else if (constraintAnalysis.primaryConstraint === 'Capacity') {
+      constraintDesc = 'Capacity limited ' + constraintAnalysis.capacityLimitedPct + '% of days (' + constraintAnalysis.capacityLimitedUnits.toLocaleString() + ' units short)';
+    } else {
+      constraintDesc = 'Both capacity and materials are sufficient';
+    }
+
+    // Build constrained header columns
+    var constrainedHeaderGroup = '';
+    var constrainedSubHeaders = '';
+    if (isCombinedMode) {
+      constrainedHeaderGroup = '<th class="px-2 py-2 text-center font-bold border-r-2 bg-purple-50" colspan="6">Reality Track<br/><span class="text-xs font-normal">(Constrained)</span></th>';
+      constrainedSubHeaders =
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Input</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Input</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Output</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">Cum<br/>Output</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50">' + periodLabel + '<br/>Ship</th>' +
+        '<th class="px-2 py-2 text-right font-semibold bg-purple-50 border-r-2">Cum<br/>Ship</th>';
+    }
+
+    // Build truth table rows
+    var truthTableRows = currentData.map(function(row, idx) {
+      var dateLabel = granularity === 'daily' ? row.date :
+                       granularity === 'weekly' ? getWeekDisplayDate(row.week_id) : row.month_id;
+      var isSunday = granularity === 'daily' && DateUtils.isSunday(row.date);
+      var cumForecast = row.cum_demand || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + (r.demand || 0); }, 0) : row.demand || 0);
+      var cumCTB = idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((r.ctb_available || r.capacity_unconstrained) || 0); }, 0) : (row.ctb_available || row.capacity_unconstrained || 0);
+      var cumCapacity = idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + (r.capacity_unconstrained || 0); }, 0) : (row.capacity_unconstrained || 0);
+      var dailyInput = granularity === 'daily' ? (row.input_final || 0) : (row.input || 0);
+      var cumInput = row.cum_input || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.input_final : r.input) || 0); }, 0) : dailyInput);
+      var dailyOutput = granularity === 'daily' ? (row.output_final || 0) : (row.output || 0);
+      var cumOutput = row.cum_output || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.output_final : r.output) || 0); }, 0) : dailyOutput);
+      var dailyShip = granularity === 'daily' ? (row.shipment_final || 0) : (row.shipments || 0);
+      var cumShip = row.cum_shipment || (idx > 0 ? currentData.slice(0, idx + 1).reduce(function(sum, r) { return sum + ((granularity === 'daily' ? r.shipment_final : r.shipments) || 0); }, 0) : dailyShip);
+      var gap = cumShip - cumForecast;
+      var bindingDriver = granularity === 'daily' ? getDailyConstraint(row) : '-';
+
+      var constrainedCells = '';
+      if (isCombinedMode && resultsConstrained) {
+        var constrainedData = granularity === 'weekly' ?
+          resultsConstrained.weeklyMetrics : granularity === 'monthly' ?
+          aggregateByMonth(resultsConstrained.programResults) : resultsConstrained.programResults;
+        var rowC = constrainedData[idx];
+        if (rowC) {
+          var dIC = granularity === 'daily' ? (rowC.input_final || 0) : (rowC.input || 0);
+          var cIC = rowC.cum_input || dIC;
+          var dOC = granularity === 'daily' ? (rowC.output_final || 0) : (rowC.output || 0);
+          var cOC = rowC.cum_output || dOC;
+          var dSC = granularity === 'daily' ? (rowC.shipment_final || 0) : (rowC.shipments || 0);
+          var cSC = rowC.cum_shipment || dSC;
+          constrainedCells =
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(dIC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(cIC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(dOC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700">' + Math.round(cOC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold">' + Math.round(dSC).toLocaleString() + '</td>' +
+            '<td class="px-2 py-2 text-right font-mono text-purple-700 font-semibold border-r-2">' + Math.round(cSC).toLocaleString() + '</td>';
+        }
+      }
+
+      var bgColor = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+      var gapColor = gap >= 0 ? 'text-green-700' : 'text-red-700';
+      var driverColor = bindingDriver === 'CTB' ? 'text-orange-700' : bindingDriver === 'Capacity' ? 'text-red-700' : 'text-slate-500';
+
+      return '<tr class="' + bgColor + (isSunday ? ' text-slate-400' : '') + ' hover:bg-blue-50 border-b">' +
+        '<td class="px-2 py-2 font-mono text-xs border-r-2">' + dateLabel + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumForecast).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono border-r-2">' + Math.round(cumCTB).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(row.capacity_unconstrained || 0).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono border-r-2">' + Math.round(cumCapacity).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(dailyInput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumInput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(dailyOutput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono">' + Math.round(cumOutput).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono text-blue-700">' + Math.round(dailyShip).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-right font-mono text-blue-700' + (isCombinedMode ? '' : ' border-r-2') + '">' + Math.round(cumShip).toLocaleString() + '</td>' +
+        constrainedCells +
+        '<td class="px-2 py-2 text-right font-mono ' + gapColor + ' font-semibold">' + (gap >= 0 ? '+' : '') + Math.round(gap).toLocaleString() + '</td>' +
+        '<td class="px-2 py-2 text-center text-xs font-semibold ' + driverColor + '">' + bindingDriver + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var constraintColor = constraintAnalysis.primaryConstraint === 'CTB' ? 'text-orange-700' : constraintAnalysis.primaryConstraint === 'Capacity' ? 'text-red-700' : 'text-green-700';
+    var constraintLabel = constraintAnalysis.primaryConstraint === 'CTB' ? '📦 CTB-limited' : constraintAnalysis.primaryConstraint === 'Capacity' ? '⚙️ Capacity-limited' : '✅ No binding constraint';
+    var yearGapColor = yearSummary.gap >= 0 ? 'text-green-700' : 'text-red-700';
+    var weekGapColor = weekSummary.gap >= 0 ? 'text-green-700' : 'text-red-700';
+    var combinedModeLabel = isCombinedMode ? '<span class="ml-2 text-xs font-normal text-blue-600">(Combined View: Unconstrained vs Constrained)</span>' : '';
+    var realityTrackLabel = isCombinedMode ? 'Reality Track<br/><span class="text-xs font-normal">(Unconstrained)</span>' : 'Reality Track';
+    var cumShipBorderClass = isCombinedMode ? '' : ' border-r-2';
+
+    planResultsHtml =
+      '<!-- Context Header -->' +
+      '<div class="bg-white border rounded-xl p-4">' +
+        '<div class="flex items-center justify-between flex-wrap gap-3">' +
+          '<div class="flex items-center gap-4">' +
+            '<div><div class="text-xs text-slate-600 mb-1">Program</div><div class="font-semibold text-slate-900">Product A</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Date Range</div><div class="font-semibold text-slate-900">' + state.startDate + ' to ' + state.endDate + '</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Sites</div><div class="font-semibold text-slate-900">' + (state.site === 'all' ? 'All Sites' : state.site) + '</div></div>' +
+            '<div class="border-l pl-4"><div class="text-xs text-slate-600 mb-1">Last Updated</div><div class="font-semibold text-slate-900">' + new Date().toLocaleString() + '</div></div>' +
+            porBadgeHtml +
+          '</div>' +
+          '<div class="flex items-center gap-2">' +
+            '<button onclick="viewAllHistoricVersions()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50">📚 Historic Versions</button>' +
+            '<button onclick="exportLatestProductionPlan()" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700">📊 Export Excel</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- What this page shows -->' +
+      '<div class="bg-blue-50 border border-blue-200 rounded-xl p-5">' +
+        '<div class="text-sm font-bold text-slate-900 mb-2">What this page shows:</div>' +
+        '<div class="text-sm text-slate-700 leading-relaxed mb-3">This plan shows two truths at once: what we <strong>could build</strong> (Capacity) and what we <strong>can actually build</strong> (Materials/CTB) — so you can quickly see whether a gap is driven by capacity readiness or material readiness.</div>' +
+        '<div class="text-sm text-slate-700 leading-relaxed"><strong>How to read it:</strong> If Capacity is healthy but Input/Ship is capped, the constraint is likely CTB/materials. If Capacity itself is below demand, the constraint is capacity/line readiness.</div>' +
+      '</div>' +
+
+      '<!-- Summary Strip -->' +
+      '<div class="grid grid-cols-2 gap-6">' +
+        '<div class="border-2 border-blue-300 bg-blue-50 rounded-xl p-5 shadow-sm">' +
+          '<div class="text-sm font-bold text-blue-900 mb-4">Cut-off: This Week (Sat, Jan 25, 2026)</div>' +
+          '<div class="space-y-3">' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Forecast</span><span class="text-lg font-bold text-slate-900">' + (weekSummary.cumForecast / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Capacity</span><span class="text-lg font-bold text-slate-900">' + (weekSummary.cumCapacity / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum CTB</span><span class="text-lg font-bold text-slate-900">' + (weekSummary.cumCTB / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline border-t-2 border-blue-200 pt-3 mt-3"><span class="text-xs text-slate-700">Cum Ship</span><span class="text-lg font-bold text-blue-700">' + (weekSummary.cumShip / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Gap vs Forecast</span><span class="text-lg font-bold ' + weekGapColor + '">' + (weekSummary.gap >= 0 ? '+' : '') + (weekSummary.gap / 1000).toFixed(1) + 'k</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="border-2 border-slate-300 bg-slate-50 rounded-xl p-5 shadow-sm">' +
+          '<div class="text-sm font-bold text-slate-900 mb-4">Cut-off: Year End (Dec 31, 2026)</div>' +
+          '<div class="space-y-3">' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Forecast</span><span class="text-lg font-bold text-slate-900">' + (yearSummary.cumForecast / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum Capacity</span><span class="text-lg font-bold text-slate-900">' + (yearSummary.cumCapacity / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Cum CTB</span><span class="text-lg font-bold text-slate-900">' + (yearSummary.cumCTB / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline border-t-2 border-slate-200 pt-3 mt-3"><span class="text-xs text-slate-700">Cum Ship</span><span class="text-lg font-bold text-blue-700">' + (yearSummary.cumShip / 1000).toFixed(1) + 'k</span></div>' +
+            '<div class="flex justify-between items-baseline"><span class="text-xs text-slate-700">Gap vs Forecast</span><span class="text-lg font-bold ' + yearGapColor + '">' + (yearSummary.gap >= 0 ? '+' : '') + (yearSummary.gap / 1000).toFixed(1) + 'k</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- Primary Constraint -->' +
+      '<div class="bg-white border-2 rounded-xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between flex-wrap gap-3">' +
+          '<div><div class="text-xs font-bold text-slate-500 mb-1">PRIMARY BINDING CONSTRAINT (THIS PERIOD)</div><div class="text-lg font-bold ' + constraintColor + '">' + constraintLabel + '</div></div>' +
+          '<div><div class="text-xs font-bold text-slate-500 mb-1">GAP (YEAR END: DELIVERABLE VS FORECAST)</div><div class="text-lg font-bold ' + yearGapColor + '">' + (yearSummary.gap >= 0 ? '+' : '') + (yearSummary.gap / 1000).toFixed(1) + 'k units</div></div>' +
+          '<div class="text-sm text-slate-600">' + constraintDesc + '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- Granularity Toggle -->' +
+      '<div class="flex items-center justify-between">' +
+        '<div class="flex items-center gap-3">' +
+          '<span class="text-sm font-semibold text-slate-700">View:</span>' +
+          '<div class="flex gap-2">' +
+            '<button onclick="switchPlanGranularity(\'daily\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'daily' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Daily</button>' +
+            '<button onclick="switchPlanGranularity(\'weekly\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'weekly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Weekly</button>' +
+            '<button onclick="switchPlanGranularity(\'monthly\')" class="px-4 py-2 rounded-lg text-sm font-semibold ' + (granularity === 'monthly' ? 'bg-blue-600 text-white' : 'border hover:bg-slate-50 text-slate-700') + '">Monthly</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex gap-2"><button onclick="viewLatestPlanFullReport()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-purple-700 transition">📊 View Full Report</button></div>' +
+      '</div>' +
+
+      '<!-- Truth Table -->' +
+      '<div class="bg-white border-2 rounded-xl p-6 shadow-sm">' +
+        '<div class="text-sm font-bold text-slate-900 mb-4">Production Plan Truth Table ' + combinedModeLabel + '</div>' +
+        '<div class="overflow-x-auto">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead class="bg-slate-100">' +
+              '<tr class="border-b-2">' +
+                '<th class="px-2 py-2 text-left font-bold border-r-2" rowspan="2">' + dateColLabel + '</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-slate-200" colspan="2">Demand / Supply</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-blue-50" colspan="2">Capacity Track</th>' +
+                '<th class="px-2 py-2 text-center font-bold border-r-2 bg-green-50" colspan="6">' + realityTrackLabel + '</th>' +
+                constrainedHeaderGroup +
+                '<th class="px-2 py-2 text-center font-bold bg-orange-50" colspan="2">Gap / Constraint</th>' +
+              '</tr>' +
+              '<tr class="border-b-2">' +
+                '<th class="px-2 py-2 text-right font-semibold bg-slate-200">Cum<br/>Forecast</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-slate-200 border-r-2">Cum<br/>CTB</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-blue-50">' + periodLabel + '<br/>Capacity</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-blue-50 border-r-2">Cum<br/>Capacity</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Input</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Input</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Output</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">Cum<br/>Output</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50">' + periodLabel + '<br/>Ship</th>' +
+                '<th class="px-2 py-2 text-right font-semibold bg-green-50' + cumShipBorderClass + '">Cum<br/>Ship</th>' +
+                constrainedSubHeaders +
+                '<th class="px-2 py-2 text-right font-semibold bg-orange-50">Gap<br/>(Cum)</th>' +
+                '<th class="px-2 py-2 text-center font-semibold bg-orange-50">Binding<br/>Driver</th>' +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' + truthTableRows + '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>';
+  } // end if (state.planResults)
+
+  // --- Simulation Library HTML ---
+  var simLibraryHtml = (function() {
+    var projects = SimulationManager.getProjects();
+    var allSimulations = SimulationManager.getSimulations();
+    var projectSimIds = new Set();
+    projects.forEach(function(proj) { proj.simulationIds.forEach(function(id) { projectSimIds.add(id); }); });
+    var standaloneSimulations = allSimulations.filter(function(sim) { return !projectSimIds.has(sim.id); });
+
+    var formatNumber = function(num) { return num.toLocaleString('en-US'); };
+    var formatDate = function(dateStr) {
+      var date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    var renderSimCard = function(sim, showVariantButton, projectId) {
+      var summary = sim.results.summary;
+      var weeklyM = sim.results.weeklyMetrics;
+      var weeksWithGap = weeklyM.filter(function(w) { return w.gap < 0; });
+      var gapColor = weeksWithGap.length === 0 ? 'text-green-600' : 'text-red-600';
+
+      var variantBtn = '';
+      if (showVariantButton && projectId) {
+        variantBtn = '<button onclick="createVariantFromSimulation(\'' + projectId + '\', \'' + sim.id + '\')" class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium">+ Create Variant</button>';
+      }
+
+      return '<div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition">' +
+        '<div class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">' +
+          '<div class="flex items-start justify-between">' +
+            '<div class="flex-1"><h4 class="font-semibold text-gray-800 mb-1">' + sim.name + '</h4>' +
+            (sim.description ? '<p class="text-xs text-gray-600">' + sim.description + '</p>' : '') +
+            '</div><span class="text-2xl">📊</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="p-4 space-y-2 text-sm border-b border-gray-100">' +
+          '<div class="flex justify-between"><span class="text-gray-600">Created:</span><span class="font-medium text-gray-800">' + formatDate(sim.createdAt) + '</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Output:</span><span class="font-medium text-gray-800">' + formatNumber(summary.totalOutput) + ' units</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Attainment:</span><span class="font-medium text-gray-800">' + summary.overallAttainment.toFixed(1) + '%</span></div>' +
+          '<div class="flex justify-between"><span class="text-gray-600">Gap Weeks:</span><span class="font-medium ' + gapColor + '">' + weeksWithGap.length + '</span></div>' +
+        '</div>' +
+        '<div class="p-4 border-t border-gray-200 space-y-2">' +
+          '<button onclick="viewSimulationReport(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">View Report</button>' +
+          variantBtn +
+          '<button onclick="promptPromoteSimulationToPOR(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm font-medium">⬆️ Promote to POR</button>' +
+          '<button onclick="confirmDeleteSimulation(\'' + sim.id + '\')" class="w-full px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">🗑️ Delete</button>' +
+        '</div>' +
+      '</div>';
+    };
+
+    if (projects.length === 0 && allSimulations.length === 0) {
+      return '<div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">' +
+        '<div class="text-gray-400 text-4xl mb-3">📊</div>' +
+        '<h4 class="text-md font-semibold text-gray-700 mb-2">No Simulations Yet</h4>' +
+        '<p class="text-gray-600 text-sm">Generate your first simulation above, then it will appear here.</p>' +
+      '</div>';
+    }
+
+    var html = '';
+
+    if (projects.length > 0) {
+      html += '<div class="mb-6"><h4 class="text-md font-semibold text-gray-700 mb-4">📁 Projects</h4><div class="space-y-6">';
+      projects.forEach(function(project) {
+        var sims = SimulationManager.getProjectSimulations(project.id);
+        html += '<div class="border-2 border-purple-200 rounded-xl bg-purple-50/50 overflow-hidden">';
+        html += '<div class="p-4 bg-gradient-to-r from-purple-100 to-pink-100 border-b border-purple-200">' +
+          '<div class="flex items-center justify-between">' +
+            '<div class="flex-1"><h5 class="font-bold text-purple-900">' + project.name + '</h5>' +
+            (project.description ? '<p class="text-sm text-purple-700 mt-1">' + project.description + '</p>' : '') +
+            '<p class="text-xs text-purple-600 mt-1">' + sims.length + ' simulation' + (sims.length !== 1 ? 's' : '') + ' • Created ' + formatDate(project.createdAt) + '</p></div>' +
+            '<button onclick="deleteProject(\'' + project.id + '\')" class="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm">Delete Project</button>' +
+          '</div></div>';
+        if (sims.length === 0) {
+          html += '<div class="p-8 text-center"><p class="text-gray-500 text-sm">No simulations in this project yet</p></div>';
+        } else {
+          html += '<div class="p-4"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+          sims.forEach(function(sim) { html += renderSimCard(sim, true, project.id); });
+          html += '</div></div>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    if (standaloneSimulations.length > 0) {
+      html += '<div><h4 class="text-md font-semibold text-gray-700 mb-4">🔬 Standalone Simulations</h4>' +
+        '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+      standaloneSimulations.forEach(function(sim) { html += renderSimCard(sim, false, null); });
+      html += '</div></div>';
+    }
+
+    return html;
+  })();
+
+  // --- Build full merged page ---
+  tabContent.innerHTML = `
+    <div class="space-y-8">
+
+      <!-- ========== SECTION 1: Plan Inputs ========== -->
+      <div>
+        <div class="mb-4">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">1</span>
+            Plan Inputs
+          </h3>
+          <p class="text-sm text-slate-600 mt-1 ml-10">Upload forecast & CTB data, configure capacity and working parameters.</p>
+        </div>
+
+        <div class="space-y-4 ml-0">
+          <!-- AI Assistant Tip -->
+          <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-5">
+            <div class="flex items-start gap-3">
+              <span class="text-3xl">💡</span>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-purple-900 mb-2">New to Production Planning?</h3>
+                <p class="text-sm text-purple-700 mb-3">
+                  Not sure how to configure your plan? Use our <strong>AI Assistant</strong> to help you get started!
+                  Just describe what you want in plain language.
+                </p>
+                <div class="flex gap-2">
+                  <button
+                    onclick="openProductionPlanAIChat()"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
+                    💬 AI Assistant
+                  </button>
+                  <div class="text-xs text-purple-600 self-center italic">
+                    Try: "Create a 90-day plan for SZ and WH sites with Sunday OT"
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast Section -->
+          <div class="bg-white border-2 border-purple-200 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleSection('forecastContent', 'forecastToggle')">
+              <div class="flex items-center gap-3">
+                <span id="forecastToggle" class="text-purple-600 text-lg transition-transform">▼</span>
+                <div>
+                  <div class="text-lg font-bold text-purple-900 flex items-center gap-2">
+                    <span>📊</span>
+                    <span>Demand Forecast</span>
+                  </div>
+                  <div class="text-sm text-slate-600 mt-1">Upload and manage weekly forecast data</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                <button onclick="uploadForecast()" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 flex items-center gap-2">
+                  <span>📤</span>
+                  <span>Upload</span>
+                </button>
+                <button onclick="viewForecastHistory()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm font-semibold hover:bg-purple-50 flex items-center gap-2">
+                  <span>📜</span>
+                  <span>History</span>
+                </button>
+                <button onclick="compareForecastVersions()" class="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg text-sm font-semibold hover:bg-purple-50 flex items-center gap-2">
+                  <span>🔄</span>
+                  <span>Compare</span>
+                </button>
+                <button onclick="deleteCurrentForecast()" class="px-4 py-2 border border-red-600 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 flex items-center gap-2">
+                  <span>🗑️</span>
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+            <div id="forecastContent" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div class="text-sm text-purple-900 mb-3">
+                <span class="font-semibold">Version:</span> <span id="forecastVersion">Not uploaded</span> |
+                <span class="font-semibold">Released:</span> <span id="forecastReleaseDate">-</span>
+              </div>
+              <div class="text-sm font-semibold text-purple-900 mb-2">Recent 4 Weeks Summary:</div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead class="bg-purple-100">
+                    <tr>
+                      <th class="px-3 py-2 text-left">Week</th>
+                      <th class="px-3 py-2 text-right">Weekly Forecast</th>
+                      <th class="px-3 py-2 text-right">Cum Forecast</th>
+                    </tr>
+                  </thead>
+                  <tbody id="forecastSummaryTable">
+                    <tr><td colspan="3" class="px-3 py-4 text-center text-slate-500">No forecast data uploaded yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-3 text-center">
+                <button onclick="viewAllForecastWeeks()" class="text-sm text-purple-600 hover:text-purple-800 font-semibold">
+                  👁️ View All Weekly Details →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTB Section -->
+          <div class="bg-white border-2 border-orange-200 rounded-xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleSection('ctbContent', 'ctbToggle')">
+              <div class="flex items-center gap-3">
+                <span id="ctbToggle" class="text-orange-600 text-lg transition-transform">▼</span>
+                <div>
+                  <div class="text-lg font-bold text-orange-900 flex items-center gap-2">
+                    <span>📦</span>
+                    <span>CTB (Clear to Build)</span>
+                  </div>
+                  <div class="text-sm text-slate-600 mt-1">Upload and manage weekly CTB data by site</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                <button onclick="uploadCTB()" class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 flex items-center gap-2">
+                  <span>📤</span>
+                  <span>Upload</span>
+                </button>
+                <button onclick="viewCTBHistory()" class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm font-semibold hover:bg-orange-50 flex items-center gap-2">
+                  <span>📜</span>
+                  <span>History</span>
+                </button>
+                <button onclick="compareCTBVersions()" class="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg text-sm font-semibold hover:bg-orange-50 flex items-center gap-2">
+                  <span>🔄</span>
+                  <span>Compare</span>
+                </button>
+              </div>
+            </div>
+            <div id="ctbContent" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div class="text-sm text-orange-900 mb-3">
+                <span class="font-semibold">Version:</span> <span id="ctbVersion">Not uploaded</span> |
+                <span class="font-semibold">Updated:</span> <span id="ctbUpdateDate">-</span>
+              </div>
+              <div class="text-sm font-semibold text-orange-900 mb-2">Recent 4 Weeks Summary (by Site):</div>
+              <div id="ctbSummaryBySite" class="space-y-4">
+                <div class="text-center text-slate-500 py-4">No CTB data uploaded yet</div>
+              </div>
+              <div class="mt-3 text-center">
+                <button onclick="viewAllCTBWeeks()" class="text-sm text-orange-600 hover:text-orange-800 font-semibold">
+                  👁️ View All Weekly Details →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configure Panel -->
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <div class="text-xl font-bold text-slate-900">Production Plan Configuration</div>
+                <div class="text-sm text-slate-600 mt-1">Add capacity units (Site → Line → Shift) to define what the report will cover</div>
+              </div>
+              <div class="flex gap-2">
+                <button id="saveConfigBtn" onclick="saveAllConfiguration()"
+                        class="px-6 py-3 bg-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-300 whitespace-nowrap flex items-center justify-center gap-2"
+                        title="Save all configuration changes to browser storage">
+                  <span>✅ Configuration Saved</span>
+                </button>
+                <button onclick="resetToDefaultConfig()"
+                        class="px-6 py-3 border-2 border-slate-300 rounded-lg text-sm text-slate-600 hover:border-red-500 hover:bg-red-50 hover:text-red-700 font-semibold"
+                        title="Reset to default sites and lines from seed data file">
+                  🔄 Reset to Default
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <!-- Section 1: Program & Timeline -->
+              <div class="bg-white rounded-lg border border-blue-200 p-5">
+                <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <span>📦</span>
+                  <span>Program & Timeline</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Program</label>
+                    <div class="w-full bg-slate-100 border border-slate-300 rounded px-3 py-2 text-sm text-slate-700">Product A</div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Vendor</label>
+                    <div class="w-full bg-slate-100 border border-slate-300 rounded px-3 py-2 text-sm text-slate-700">Vendor X</div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Start Date</label>
+                    <input type="date" id="configStartDate" value="2026-10-01" class="w-full border rounded px-3 py-2 text-sm" onchange="validateReportDateRange(); markConfigAsModified();">
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">End Date</label>
+                    <input type="date" id="configEndDate" value="2026-10-31" class="w-full border rounded px-3 py-2 text-sm" onchange="validateReportDateRange(); markConfigAsModified();">
+                    <div id="endDateError" class="text-xs text-red-600 mt-1 hidden"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Capacity Configuration -->
+              <div class="bg-white rounded-lg border border-blue-200 p-5">
+                <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2">
+                  <span>🏭</span>
+                  <span>Capacity Configuration (Site → Line → Shift)</span>
+                </div>
+                <div id="capacitySitesContainer" class="space-y-6"></div>
+                <div class="mt-4">
+                  <button onclick="addSiteCapacity()"
+                          class="w-full border-2 border-dashed border-blue-300 rounded-lg py-3 text-sm text-blue-600 hover:border-blue-500 hover:bg-blue-50 font-semibold">
+                    + Add Site
+                  </button>
+                </div>
+              </div>
+
+              <!-- Section 3: Working Parameters -->
+              <div class="bg-white rounded-lg border border-blue-200 p-5">
+                <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2 cursor-pointer" onclick="toggleSection('workingParamsContent', 'workingParamsToggle')">
+                  <span id="workingParamsToggle" class="text-blue-600 transition-transform">▼</span>
+                  <span>⏰</span>
+                  <span>Working Parameters</span>
+                </div>
+                <div id="workingParamsContent" class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">Default Shift Hours</label>
+                      <input type="number" id="configShiftHours" value="10" min="1" max="24" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                      <div class="text-xs text-slate-500 mt-1">Hours per shift (can be overridden per line)</div>
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">Working Days Pattern</label>
+                      <select id="configWorkingDays" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                        <option value="MON_SAT" selected>Mon-Sat (6 days)</option>
+                        <option value="MON_FRI">Mon-Fri (5 days)</option>
+                        <option value="MON_SUN">Mon-Sun (7 days)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Lag (Workdays)</label>
+                      <input type="number" id="configShipmentLag" value="2" min="0" max="10" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                      <div class="text-xs text-slate-500 mt-1">Days from output to shipment-ready</div>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">Max Daily Shipment (Units)</label>
+                      <input type="number" id="configMaxDailyShipment" value="30000" min="0" step="1000" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                      <div class="text-xs text-slate-500 mt-1">Maximum units that can ship per day (logistics limit)</div>
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">📦 Pallet Size (Units/Pallet)</label>
+                      <input type="number" id="configPalletSize" value="480" min="1" step="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                      <div class="text-xs text-slate-500 mt-1">Shipment will be rounded to multiples of this (e.g., 480 = full pallets only)</div>
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-1">Shipment Start Date</label>
+                      <input type="date" id="configShipmentStartDate" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                      <div class="text-xs text-slate-500 mt-1">First date when shipment can begin (leave empty to use forecast start date)</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 col-span-full">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="configConsiderHolidays" checked class="rounded" onchange="markConfigAsModified()">
+                    <span class="text-sm font-semibold text-slate-700">Consider holidays when calculating working days</span>
+                  </label>
+                </div>
+
+                <div class="mt-3 col-span-full flex gap-3">
+                  <div class="flex-1">
+                    <button onclick="openHolidayCalendarManager()"
+                            class="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 shadow-sm flex items-center justify-center gap-2">
+                      <span>📅</span>
+                      <span>Manage Holiday Calendar</span>
+                      <span class="text-xs opacity-75">(China & Vietnam 2026)</span>
+                    </button>
+                    <div class="text-xs text-slate-500 mt-1">Configure public holidays for sites</div>
+                  </div>
+                  <div class="flex-1">
+                    <button onclick="openCurvePresetsManager()"
+                            class="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg text-sm font-semibold hover:from-green-700 hover:to-teal-700 shadow-sm flex items-center justify-center gap-2">
+                      <span>📈</span>
+                      <span>Manage Curve Presets</span>
+                      <span class="text-xs opacity-75">(UPH & Yield)</span>
+                    </button>
+                    <div class="text-xs text-slate-500 mt-1">Configure default ramp curves</div>
+                  </div>
+                </div>
+
+                <!-- Inventory Audit Configuration -->
+                <div class="mt-6 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl">
+                  <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleSection('inventoryAuditContent', 'inventoryAuditToggle')">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xl">📦</span>
+                      <div class="font-bold text-purple-900">Inventory Audit</div>
+                    </div>
+                    <span id="inventoryAuditToggle" class="text-purple-600 text-xl transition-transform">▼</span>
+                  </div>
+                  <div id="inventoryAuditContent">
+                    <div class="text-xs text-purple-700 mb-4">
+                      Semi-annual inventory audit required by Customs and Finance. Complete production halt during audit (no input, no output, no shipment)
+                    </div>
+                    <div class="mb-4">
+                      <label class="text-xs text-slate-600 font-semibold block mb-2">Middle Year</label>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="text-xs text-slate-500 block mb-1">Days</label>
+                          <select id="configAuditMiddleDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('middle'); markConfigAsModified();">
+                            <option value="1" selected>1 day</option>
+                            <option value="2">2 days</option>
+                          </select>
+                        </div>
+                        <div id="configAuditMiddleDatesContainer">
+                          <label class="text-xs text-slate-500 block mb-1">Date</label>
+                          <input type="date" id="configAuditMiddleDate1" value="2026-06-30" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="text-xs text-slate-600 font-semibold block mb-2">End Year</label>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="text-xs text-slate-500 block mb-1">Days</label>
+                          <select id="configAuditEndDays" class="w-full border rounded px-3 py-2 text-sm" onchange="updateAuditDates('end'); markConfigAsModified();">
+                            <option value="1" selected>1 day</option>
+                            <option value="2">2 days</option>
+                          </select>
+                        </div>
+                        <div id="configAuditEndDatesContainer">
+                          <label class="text-xs text-slate-500 block mb-1">Date</label>
+                          <input type="date" id="configAuditEndDate1" value="2026-12-31" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 4: Output Flow-Time Factors -->
+              <div class="bg-white rounded-lg border border-blue-200 p-5">
+                <div class="text-sm font-bold text-blue-900 mb-4 flex items-center gap-2 cursor-pointer" onclick="toggleSection('flowTimeContent', 'flowTimeToggle')">
+                  <span id="flowTimeToggle" class="text-blue-600 transition-transform">▼</span>
+                  <span>📈</span>
+                  <span>Output Flow-Time Factors</span>
+                </div>
+                <div id="flowTimeContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Day 1 Factor</label>
+                    <input type="number" id="configDay1Factor" value="0.5" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                    <div class="text-xs text-slate-500 mt-1">First day output multiplier</div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Day 2 Factor</label>
+                    <input type="number" id="configDay2Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                    <div class="text-xs text-slate-500 mt-1">Second day output multiplier</div>
+                  </div>
+                  <div>
+                    <label class="text-xs text-slate-600 font-semibold block mb-1">Day 3+ Factor</label>
+                    <input type="number" id="configDay3Factor" value="1.0" step="0.1" min="0" max="1" class="w-full border rounded px-3 py-2 text-sm" onchange="markConfigAsModified()">
+                    <div class="text-xs text-slate-500 mt-1">Day 3+ output multiplier</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuration Tips -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <div class="text-2xl">💡</div>
+              <div class="flex-1">
+                <div class="font-semibold text-amber-900 mb-1">Configuration Tips</div>
+                <ul class="text-sm text-amber-800 space-y-1">
+                  <li>• Use the hierarchical structure: Add <strong>Site</strong> → Add <strong>Line</strong> → Add <strong>Shift</strong></li>
+                  <li>• Configure holiday schedules at the <strong>site level</strong> (follow legal holidays or custom)</li>
+                  <li>• Select <strong>UPH and Yield curves</strong> for each Line × Shift combination using dropdowns</li>
+                  <li>• Different shifts of the same line can have different ramp start dates and curves</li>
+                  <li>• Ramp curves are <strong>workday-indexed</strong> - they skip Sundays and holidays</li>
+                  <li>• <strong>Unconstrained mode</strong> shows pure capacity, <strong>Constrained mode</strong> applies CTB material limits, <strong>Combined mode</strong> shows both scenarios side-by-side for easy comparison</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== SECTION 2: Simulation Engine ========== -->
+      <div>
+        <div class="mb-4">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">2</span>
+            Simulation Engine
+          </h3>
+          <p class="text-sm text-slate-600 mt-1 ml-10">Load scenario data or generate a new simulation.</p>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-5 bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl">
+            <button onclick="loadDemoDataForProductionPlan()"
+                    class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 shadow-sm">
+              🧪 Load Demo Data
+            </button>
+            <div class="flex items-center gap-3">
+              <button onclick="resetConfigurationToDefault()"
+                      class="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50">
+                Reset to Default
+              </button>
+              <button onclick="generatePlanFromConfig()"
+                      class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+                🚀 Generate New Simulation
+              </button>
+            </div>
+          </div>
+
+          <!-- Configuration Summary Card -->
+          <div id="configSummaryCard" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-5">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-4 flex-1">
+                <span id="configSummaryIcon" class="text-4xl">🚀</span>
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-lg font-bold text-slate-900" id="configSummaryName">Q4 Ramp-Up (Oct-Dec)</span>
+                    <span class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">DEMO LOADED</span>
+                  </div>
+                  <div class="text-sm text-slate-700 mb-3" id="configSummaryDescription">National Day holiday, new product ramp, year-end sprint</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📅 Period:</span>
+                      <span class="text-slate-900 font-mono" id="configSummaryPeriod">2026-10-01 ~ 2026-12-27</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📊 Forecast:</span>
+                      <span class="text-slate-900" id="configSummaryForecast">13 weeks</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">🏭 Sites:</span>
+                      <span class="text-slate-900" id="configSummarySites">WF, VN02</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-slate-700">📦 CTB:</span>
+                      <span class="text-slate-900" id="configSummaryCTB">Variable constraints</span>
+                    </div>
+                  </div>
+                  <div class="mt-3 flex flex-wrap gap-1" id="configSummaryHighlights"></div>
+                </div>
+              </div>
+              <button onclick="clearConfigSummary()" class="text-slate-400 hover:text-slate-600 text-xl leading-none ml-4" title="Clear demo selection">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation results are now in the Simulations tab -->
+
+    </div>
+  `;
+
+  // Post-render initialization (same as renderProductionPlanGenerate)
+  renderCapacityUnitsConfig();
+  loadProgramConfig();
+
+  // Load forecast data
+  try {
+    const fv = JSON.parse(localStorage.getItem('productionPlan_forecast_versions') || '[]');
+    if (fv.length > 0 && typeof window.updateForecastSummary === 'function') {
+      window.updateForecastSummary(fv[fv.length - 1]);
+    }
+  } catch (error) {
+    console.error('[Render] Error loading forecast data:', error);
+  }
+
+  // Load CTB data
+  try {
+    const cv = JSON.parse(localStorage.getItem('productionPlan_ctb_versions') || '[]');
+    if (cv.length > 0 && typeof window.updateCTBSummary === 'function') {
+      window.updateCTBSummary(cv[cv.length - 1]);
+    }
+  } catch (error) {
+    console.error('[Render] Error loading CTB data:', error);
+  }
+}
 
 // 2.1 Latest Production Plan (read-only view)
 function renderProductionPlanLatest() {
@@ -4746,7 +6076,7 @@ function renderProductionPlanLatest() {
         <div class="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6 mt-6">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <div class="text-lg font-bold text-slate-900 cursor-pointer hover:text-purple-700 transition" onclick="switchProductionPlanTab('library')">
+              <div class="text-lg font-bold text-slate-900 cursor-pointer hover:text-purple-700 transition" onclick="switchProductionPlanTab('simulations')">
                 📂 Simulation Library →
               </div>
               <div class="text-sm text-slate-600 mt-1">Saved simulations ready to promote to POR. Click title to view all.</div>
@@ -4870,7 +6200,7 @@ function renderProductionPlanGenerate() {
               <button
                 onclick="openProductionPlanAIChat()"
                 class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
-                💬 Open AI Assistant
+                💬 AI Assistant
               </button>
               <div class="text-xs text-purple-600 self-center italic">
                 Try: "Create a 90-day plan for SZ and WH sites with Sunday OT"
@@ -6884,8 +8214,8 @@ window.confirmSaveSimulation = function() {
   // Cleanup temp data immediately
   delete window._tempSimulationData;
 
-  // Switch to Library tab and re-render
-  window.productionPlanState.activeTab = 'library';
+  // Switch to Simulations tab and re-render
+  window.productionPlanState.activeTab = 'simulations';
   renderProductionPlan();
 
   // Show success message
@@ -10089,7 +11419,7 @@ function getDailyConstraint(day) {
  */
 function switchPlanGranularity(granularity) {
   window.productionPlanState.viewGranularity = granularity;
-  renderProductionPlanLatest();
+  renderProductionPlan();
 }
 
 /**
@@ -10347,11 +11677,14 @@ function getKPIDataByProduct(productId) {
         trend: 'down',
         driver: "Process improvement –$5",
         owner: "Finance",
-        breakdown: { material: 185.0, labor: 46.0, overhead: 30.0, rework: 7.0 }
+        breakdown: { material: 185.0, labor: 46.0, overhead: 30.0, rework: 7.0 },
+        negotiationRate: 24.5
       },
       campus: {
         readiness: 98.2,
         target: 98.0,
+        utilization: 82.0,
+        utilizationTarget: 80.0,
         weeklyTrend: [97.5, 97.8, 98.0, 98.2],
         variance: 0.2,
         delta: 0.2,
@@ -10361,8 +11694,19 @@ function getKPIDataByProduct(productId) {
         issues: 1,
         driver: "1 issue: Minor maintenance",
         owner: "Facilities",
-        wf: { readiness: 98.5, issues: 0 },
-        vn02: { readiness: 97.9, issues: 1 }
+        wf: { readiness: 98.5, utilization: 84.0, issues: 0 },
+        vn02: { readiness: 97.9, utilization: 80.0, issues: 1 }
+      },
+      // SCO Aligned Metrics
+      sco: {
+        commitAttainment: { current: 104.4, target: 100, wow: 1.8, trend: [98.5, 100.2, 102.8, 104.4] },
+        scheduleAdherence: { current: 104.6, target: 100, wow: 2.5, trend: [96.0, 99.0, 102.0, 104.6] },
+        capacityUtilization: { current: 87.2, target: 85, wow: 1.2, trend: [83.5, 85.0, 86.1, 87.2] },
+        capacityShortage: { current: 2.1, target: 5.0, wow: -0.3, trend: [3.8, 3.2, 2.4, 2.1] },
+        mfgLeadTime: { current: 4.2, target: 5.0, unit: 'days', wow: -0.1, trend: [4.5, 4.4, 4.3, 4.2] },
+        ltAchieveRate: { current: 94.5, target: 90, wow: 0.8, trend: [91.2, 92.5, 93.7, 94.5] },
+        btoCtoLeadTime: { current: 3.8, target: 4.5, unit: 'days', wow: -0.2, trend: [4.2, 4.0, 4.0, 3.8] },
+        btoCtoOnTimeShip: { current: 96.2, target: 90, wow: 0.5, trend: [93.5, 94.8, 95.7, 96.2] }
       }
     },
     'B': { // Product B: Struggling, below targets
@@ -10420,11 +11764,14 @@ function getKPIDataByProduct(productId) {
         trend: 'up',
         driver: "Rework +$18, Expedite +$12",
         owner: "Finance",
-        breakdown: { material: 205.0, labor: 52.5, overhead: 36.0, rework: 19.0 }
+        breakdown: { material: 205.0, labor: 52.5, overhead: 36.0, rework: 19.0 },
+        negotiationRate: 8.2
       },
       campus: {
         readiness: 91.2,
         target: 98.0,
+        utilization: 72.5,
+        utilizationTarget: 80.0,
         weeklyTrend: [93.5, 92.8, 92.0, 91.2],
         variance: -6.9,
         delta: -6.8,
@@ -10434,8 +11781,18 @@ function getKPIDataByProduct(productId) {
         issues: 8,
         driver: "8 issues: Equipment (3 critical)",
         owner: "Facilities",
-        wf: { readiness: 92.5, issues: 4 },
-        vn02: { readiness: 89.9, issues: 4 }
+        wf: { readiness: 92.5, utilization: 74.0, issues: 4 },
+        vn02: { readiness: 89.9, utilization: 71.0, issues: 4 }
+      },
+      sco: {
+        commitAttainment: { current: 74.6, target: 100, wow: -3.2, trend: [83.3, 80.2, 77.1, 74.6] },
+        scheduleAdherence: { current: 76.4, target: 100, wow: -2.1, trend: [84.0, 81.0, 78.0, 76.4] },
+        capacityUtilization: { current: 68.5, target: 85, wow: -1.8, trend: [74.0, 72.0, 70.0, 68.5] },
+        capacityShortage: { current: 18.2, target: 5.0, wow: 2.1, trend: [12.5, 14.8, 16.5, 18.2] },
+        mfgLeadTime: { current: 7.8, target: 5.0, unit: 'days', wow: 0.5, trend: [6.5, 7.0, 7.3, 7.8] },
+        ltAchieveRate: { current: 72.3, target: 90, wow: -2.5, trend: [80.5, 77.2, 74.8, 72.3] },
+        btoCtoLeadTime: { current: 6.5, target: 4.5, unit: 'days', wow: 0.8, trend: [5.2, 5.8, 5.7, 6.5] },
+        btoCtoOnTimeShip: { current: 68.5, target: 90, wow: -3.2, trend: [78.2, 74.5, 71.8, 68.5] }
       }
     },
     'C': { // Product C: Cost challenges, decent production
@@ -10493,11 +11850,14 @@ function getKPIDataByProduct(productId) {
         trend: 'down',
         driver: "Material +$15, Freight +$8",
         owner: "Finance",
-        breakdown: { material: 210.0, labor: 51.0, overhead: 32.0, rework: 5.0 }
+        breakdown: { material: 210.0, labor: 51.0, overhead: 32.0, rework: 5.0 },
+        negotiationRate: 18.5
       },
       campus: {
         readiness: 95.8,
         target: 98.0,
+        utilization: 78.5,
+        utilizationTarget: 80.0,
         weeklyTrend: [95.0, 95.4, 95.6, 95.8],
         variance: -2.2,
         delta: -2.2,
@@ -10507,8 +11867,18 @@ function getKPIDataByProduct(productId) {
         issues: 4,
         driver: "4 issues: HVAC (1 critical)",
         owner: "Facilities",
-        wf: { readiness: 96.8, issues: 2 },
-        vn02: { readiness: 94.8, issues: 2 }
+        wf: { readiness: 96.8, utilization: 80.0, issues: 2 },
+        vn02: { readiness: 94.8, utilization: 77.0, issues: 2 }
+      },
+      sco: {
+        commitAttainment: { current: 96.3, target: 100, wow: 0.7, trend: [93.3, 94.8, 95.6, 96.3] },
+        scheduleAdherence: { current: 95.0, target: 100, wow: 0.6, trend: [92.4, 93.6, 94.4, 95.0] },
+        capacityUtilization: { current: 82.8, target: 85, wow: 0.5, trend: [80.5, 81.5, 82.2, 82.8] },
+        capacityShortage: { current: 4.8, target: 5.0, wow: -0.2, trend: [6.0, 5.5, 5.0, 4.8] },
+        mfgLeadTime: { current: 5.2, target: 5.0, unit: 'days', wow: 0.1, trend: [5.0, 5.1, 5.1, 5.2] },
+        ltAchieveRate: { current: 88.2, target: 90, wow: 0.3, trend: [86.5, 87.2, 87.8, 88.2] },
+        btoCtoLeadTime: { current: 4.6, target: 4.5, unit: 'days', wow: 0.0, trend: [4.5, 4.6, 4.5, 4.6] },
+        btoCtoOnTimeShip: { current: 88.5, target: 90, wow: 0.2, trend: [86.8, 87.5, 88.2, 88.5] }
       }
     },
     'D': { // Product D: Labor shortage impacting output
@@ -10566,7 +11936,8 @@ function getKPIDataByProduct(productId) {
         trend: 'down',
         driver: "Lower volume, fixed costs",
         owner: "Finance",
-        breakdown: { material: 192.0, labor: 48.0, overhead: 34.5, rework: 5.0 }
+        breakdown: { material: 192.0, labor: 48.0, overhead: 34.5, rework: 5.0 },
+        negotiationRate: 15.8
       },
       campus: {
         readiness: 97.5,
@@ -10580,14 +11951,505 @@ function getKPIDataByProduct(productId) {
         issues: 2,
         driver: "2 issues: Safety inspection pending",
         owner: "Facilities",
-        wf: { readiness: 98.0, issues: 1 },
-        vn02: { readiness: 97.0, issues: 1 }
+        wf: { readiness: 98.0, utilization: 81.0, issues: 1 },
+        vn02: { readiness: 97.0, utilization: 76.0, issues: 1 }
+      },
+      sco: {
+        commitAttainment: { current: 85.0, target: 100, wow: -1.7, trend: [89.2, 87.5, 86.5, 85.0] },
+        scheduleAdherence: { current: 82.4, target: 100, wow: -1.9, trend: [87.0, 85.6, 84.0, 82.4] },
+        capacityUtilization: { current: 74.5, target: 85, wow: -1.5, trend: [78.5, 77.0, 76.0, 74.5] },
+        capacityShortage: { current: 12.8, target: 5.0, wow: 1.2, trend: [9.5, 10.5, 11.5, 12.8] },
+        mfgLeadTime: { current: 6.2, target: 5.0, unit: 'days', wow: 0.3, trend: [5.5, 5.8, 5.9, 6.2] },
+        ltAchieveRate: { current: 78.5, target: 90, wow: -1.8, trend: [84.0, 81.5, 80.2, 78.5] },
+        btoCtoLeadTime: { current: 5.5, target: 4.5, unit: 'days', wow: 0.4, trend: [4.8, 5.0, 5.1, 5.5] },
+        btoCtoOnTimeShip: { current: 76.2, target: 90, wow: -2.0, trend: [82.5, 80.0, 78.2, 76.2] }
       }
     }
   };
 
+  // Add campus utilization data for Product D
+  dataByProduct['D'].campus.utilization = 78.5;
+  dataByProduct['D'].campus.utilizationTarget = 80.0;
+
   return dataByProduct[productId] || dataByProduct['A']; // Default to Product A
 }
+
+/**
+ * Render Production Management page — Factory Execution Control Panel
+ */
+function renderProductionManagement() {
+  const content = $("content");
+
+  // Collect data from command center for Products A-D
+  var productIds = ['A', 'B', 'C', 'D'];
+  var ioRows = '';
+  for (var i = 0; i < productIds.length; i++) {
+    var pid = productIds[i];
+    var d = window.getCommandCenterData ? window.getCommandCenterData(pid) : null;
+    if (!d || !d.weekly_snapshot) continue;
+    var c = d.weekly_snapshot;
+    var pName = d.program_timeline ? d.program_timeline.program_name : ('Product ' + pid);
+    var gapClass = c.gap_units < 0 ? 'text-red-700 bg-red-50' : 'text-green-700 bg-green-50';
+    var limiterMap = { ctb: 'Material (CTB)', yield: 'Yield', capacity: 'Capacity' };
+    var limiterLabel = limiterMap[c.primary_limiter] || c.primary_limiter;
+    ioRows += '<tr class="hover:bg-slate-50">' +
+      '<td class="p-2.5 border border-slate-200 font-semibold">' + pName + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-center">' + c.week_id + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right">' + c.demand_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right">' + c.capacity_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right">' + c.ctb_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right">' + c.expected_output_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right">' + c.deliverable_ship_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right ' + gapClass + ' font-semibold">' + c.gap_units.toLocaleString() + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-right ' + gapClass + '">' + c.gap_pct + '%</td>' +
+      '<td class="p-2.5 border border-slate-200">' + limiterLabel + '</td>' +
+      '</tr>';
+  }
+
+  // Line execution seed data
+  var lines = [
+    { name: 'WF-L1', uph: 42, yield: 70, wip: 1240, status: 'YELLOW', statusColor: 'amber' },
+    { name: 'WF-L2', uph: 38, yield: 94, wip: 860, status: 'GREEN', statusColor: 'emerald' },
+    { name: 'VN02-L1', uph: 55, yield: 92, wip: 1100, status: 'GREEN', statusColor: 'emerald' }
+  ];
+  var lineCards = '';
+  for (var li = 0; li < lines.length; li++) {
+    var ln = lines[li];
+    var borderColor = ln.statusColor === 'amber' ? 'border-amber-400' : 'border-emerald-400';
+    var badgeBg = ln.statusColor === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800';
+    var yieldColor = ln.yield < 80 ? 'text-red-600' : (ln.yield < 90 ? 'text-amber-600' : 'text-emerald-600');
+    lineCards += '<div class="bg-white rounded-xl border-l-4 ' + borderColor + ' shadow-md p-5">' +
+      '<div class="flex items-center justify-between mb-4">' +
+        '<h4 class="text-base font-bold text-slate-800">' + ln.name + '</h4>' +
+        '<span class="px-2.5 py-1 text-xs font-bold rounded-full ' + badgeBg + '">' + ln.status + '</span>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-3">' +
+        '<div class="bg-slate-50 rounded-lg p-3 text-center">' +
+          '<div class="text-xs text-slate-500 mb-1">UPH</div>' +
+          '<div class="text-xl font-bold text-slate-800">' + ln.uph + '</div>' +
+        '</div>' +
+        '<div class="bg-slate-50 rounded-lg p-3 text-center">' +
+          '<div class="text-xs text-slate-500 mb-1">Yield (FPY)</div>' +
+          '<div class="text-xl font-bold ' + yieldColor + '">' + ln.yield + '%</div>' +
+        '</div>' +
+        '<div class="bg-slate-50 rounded-lg p-3 text-center">' +
+          '<div class="text-xs text-slate-500 mb-1">WIP</div>' +
+          '<div class="text-xl font-bold text-slate-800">' + ln.wip.toLocaleString() + '</div>' +
+        '</div>' +
+        '<div class="bg-slate-50 rounded-lg p-3 text-center">' +
+          '<div class="text-xs text-slate-500 mb-1">Status</div>' +
+          '<div class="text-xl font-bold ' + (ln.statusColor === 'amber' ? 'text-amber-600' : 'text-emerald-600') + '">' + ln.status + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // MIL seed data
+  var milIssues = [
+    { id: 'MIL-001', issue: 'FPY drop on WF-L1 final assembly', severity: 'HIGH', program: 'Product A', line: 'WF-L1', status: 'Open', owner: 'PQE', days: 3 },
+    { id: 'MIL-002', issue: 'IC-77 material shortage', severity: 'HIGH', program: 'Product A', line: 'WF-L1', status: 'Escalated', owner: 'Sourcing', days: 5 },
+    { id: 'MIL-003', issue: 'Test fixture calibration drift', severity: 'MED', program: 'Product B', line: 'WF-L2', status: 'In Progress', owner: 'TE', days: 2 },
+    { id: 'MIL-004', issue: 'Conveyor belt speed inconsistency', severity: 'LOW', program: 'Product C', line: 'VN02-L1', status: 'Open', owner: 'ME', days: 7 },
+    { id: 'MIL-005', issue: 'Labeling misprint on outer carton', severity: 'MED', program: 'Product D', line: 'WF-L2', status: 'Resolved', owner: 'Quality', days: 1 }
+  ];
+  var milRows = '';
+  for (var mi = 0; mi < milIssues.length; mi++) {
+    var iss = milIssues[mi];
+    var sevBg = iss.severity === 'HIGH' ? 'bg-red-100 text-red-800' : (iss.severity === 'MED' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700');
+    var statusBg = iss.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' : (iss.status === 'Escalated' ? 'bg-red-100 text-red-800' : (iss.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'));
+    milRows += '<tr class="hover:bg-slate-50">' +
+      '<td class="p-2.5 border border-slate-200 font-mono text-xs font-semibold">' + iss.id + '</td>' +
+      '<td class="p-2.5 border border-slate-200">' + iss.issue + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-center"><span class="px-2 py-0.5 text-xs font-bold rounded ' + sevBg + '">' + iss.severity + '</span></td>' +
+      '<td class="p-2.5 border border-slate-200">' + iss.program + '</td>' +
+      '<td class="p-2.5 border border-slate-200">' + iss.line + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-center"><span class="px-2 py-0.5 text-xs font-semibold rounded ' + statusBg + '">' + iss.status + '</span></td>' +
+      '<td class="p-2.5 border border-slate-200">' + iss.owner + '</td>' +
+      '<td class="p-2.5 border border-slate-200 text-center font-semibold">' + iss.days + 'd</td>' +
+      '</tr>';
+  }
+
+  content.innerHTML =
+    '<div class="space-y-6">' +
+
+    // Header + Action Bar
+    '<div class="bg-gradient-to-r from-slate-100 via-blue-50 to-indigo-50 rounded-xl shadow-md border border-slate-200 p-8">' +
+      '<h1 class="text-3xl font-bold mb-2 text-slate-800">Production Management</h1>' +
+      '<p class="text-slate-600 mb-5">Factory execution control panel — monitor output, yield, material, and line status</p>' +
+      '<div class="flex flex-wrap gap-3">' +
+        '<button onclick="generateProductionBrief(\'daily_brief\')" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-purple-700 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
+          'Generate Daily Brief</button>' +
+        '<button onclick="generateProductionBrief(\'daily_post\')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-cyan-700 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>' +
+          'Generate Daily Post</button>' +
+        '<button onclick="generateProductionBrief(\'exec_summary\')" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-sm font-medium hover:from-emerald-700 hover:to-teal-700 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>' +
+          'Generate Exec Summary</button>' +
+        '<button onclick="openReportCenter()" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-lg text-sm font-medium hover:from-violet-700 hover:to-fuchsia-700 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>' +
+          'Report Center</button>' +
+        '<button onclick="exportProductionSnapshot()" class="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
+          '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
+          'Export Snapshot</button>' +
+      '</div>' +
+    '</div>' +
+
+    // Section 1: Factory Execution Snapshot
+    '<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">' +
+      '<h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">' +
+        '<span class="w-2 h-2 rounded-full bg-blue-500"></span>Factory Execution Snapshot</h2>' +
+      '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">' +
+        // Today's Output
+        '<div class="rounded-xl border-l-4 border-amber-400 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm">' +
+          '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Today\'s FATP Output</div>' +
+          '<div class="text-2xl font-bold text-slate-800">2,846 <span class="text-sm font-normal text-slate-500">/ 3,308</span></div>' +
+          '<div class="flex items-center gap-2 mt-2">' +
+            '<div class="flex-1 bg-slate-200 rounded-full h-2"><div class="bg-amber-500 h-2 rounded-full" style="width:86%"></div></div>' +
+            '<span class="text-xs font-bold text-amber-600">86%</span>' +
+          '</div>' +
+          '<div class="flex items-center justify-between mt-2">' +
+            '<span class="px-2 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800">YELLOW</span>' +
+            '<span class="text-[10px] text-slate-400" title="MES API — auto-refreshed daily">MES &bull; 6:00 AM</span>' +
+          '</div>' +
+        '</div>' +
+        // Yield (FPY)
+        '<div class="rounded-xl border-l-4 border-emerald-400 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">' +
+          '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Yield (FPY)</div>' +
+          '<div class="text-2xl font-bold text-emerald-700">91.2%</div>' +
+          '<div class="flex items-center gap-2 mt-2">' +
+            '<div class="flex-1 bg-slate-200 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width:91.2%"></div></div>' +
+            '<span class="text-xs font-bold text-emerald-600">On Target</span>' +
+          '</div>' +
+          '<div class="flex items-center justify-between mt-2">' +
+            '<span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800">GREEN</span>' +
+            '<span class="text-[10px] text-slate-400" title="Quality system — auto-refreshed daily">Quality &bull; 6:00 AM</span>' +
+          '</div>' +
+        '</div>' +
+        // Material Readiness
+        '<div class="rounded-xl border-l-4 border-amber-400 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm">' +
+          '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Material Readiness</div>' +
+          '<div class="text-2xl font-bold text-slate-800">2 <span class="text-sm font-normal text-slate-500">shortages</span></div>' +
+          '<div class="text-xs text-slate-600 mt-2">IC-77 (WF-L1), Flex Cable (VN02)</div>' +
+          '<div class="flex items-center justify-between mt-2">' +
+            '<span class="px-2 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800">YELLOW</span>' +
+            '<span class="text-[10px] text-slate-400" title="Sourcing upload — last updated">MRP &bull; 8:30 AM</span>' +
+          '</div>' +
+        '</div>' +
+        // Active Alerts
+        '<div class="rounded-xl border-l-4 border-red-400 bg-gradient-to-br from-red-50 to-white p-5 shadow-sm">' +
+          '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Active Alerts</div>' +
+          '<div class="text-2xl font-bold text-slate-800">3</div>' +
+          '<div class="text-xs text-slate-600 mt-2"><span class="px-1.5 py-0.5 bg-red-100 text-red-800 font-bold rounded mr-1">2 HIGH</span><span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 font-bold rounded">1 MED</span></div>' +
+          '<div class="flex items-center justify-between mt-2">' +
+            '<span class="px-2 py-0.5 text-xs font-bold rounded bg-red-100 text-red-800">RED</span>' +
+            '<span class="text-[10px] text-slate-400" title="System-calculated from multiple sources">System &bull; Live</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // Section 2: Production IO Status
+    '<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">' +
+      '<div class="flex items-center justify-between mb-4">' +
+        '<h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">' +
+          '<span class="w-2 h-2 rounded-full bg-indigo-500"></span>Production IO Status</h2>' +
+        '<div class="flex items-center gap-3 text-[10px] text-slate-400">' +
+          '<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span> Demand: Excel W11</span>' +
+          '<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span> CTB: Excel 8:30AM</span>' +
+          '<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span> Output: MES 6:00AM</span>' +
+          '<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span> Capacity: Config v2.1</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="overflow-x-auto">' +
+        '<table class="w-full text-xs border-collapse">' +
+          '<thead>' +
+            '<tr class="bg-slate-100">' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Program</th>' +
+              '<th class="text-center p-2.5 border border-slate-200 font-semibold text-slate-700">Week</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Demand</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Capacity</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">CTB</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Exp. Output</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Ship</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Gap</th>' +
+              '<th class="text-right p-2.5 border border-slate-200 font-semibold text-slate-700">Gap%</th>' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Primary Limiter</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' + ioRows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>' +
+
+    // Section 3: Line Execution
+    '<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">' +
+      '<h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">' +
+        '<span class="w-2 h-2 rounded-full bg-emerald-500"></span>Line Execution</h2>' +
+      '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + lineCards + '</div>' +
+    '</div>' +
+
+    // Section 4: Manufacturing Issue Tracker
+    '<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">' +
+      '<h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">' +
+        '<span class="w-2 h-2 rounded-full bg-red-500"></span>Manufacturing Issue Tracker (MIL)</h2>' +
+      '<div class="overflow-x-auto">' +
+        '<table class="w-full text-xs border-collapse">' +
+          '<thead>' +
+            '<tr class="bg-slate-100">' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">ID</th>' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Issue</th>' +
+              '<th class="text-center p-2.5 border border-slate-200 font-semibold text-slate-700">Severity</th>' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Program</th>' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Line</th>' +
+              '<th class="text-center p-2.5 border border-slate-200 font-semibold text-slate-700">Status</th>' +
+              '<th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Owner</th>' +
+              '<th class="text-center p-2.5 border border-slate-200 font-semibold text-slate-700">Days Open</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' + milRows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>' +
+
+    '</div>';
+}
+
+/**
+ * Generate Production Brief — opens AI drawer with formatted content
+ */
+window.generateProductionBrief = function(briefType) {
+  var drawerBody = document.getElementById('aiDrawerBody');
+  var drawer = document.getElementById('aiDrawer');
+  var backdrop = document.getElementById('aiDrawerBackdrop');
+  if (!drawerBody || !drawer || !backdrop) return;
+
+  var titles = {
+    daily_brief: 'Daily Production Brief',
+    daily_post: 'Daily Post (Slack / WeChat)',
+    exec_summary: 'Executive Summary'
+  };
+
+  // Show loading state
+  drawerBody.innerHTML =
+    '<div class="flex flex-col items-center justify-center py-12">' +
+      '<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>' +
+      '<div class="text-sm text-slate-600">Generating ' + (titles[briefType] || 'brief') + '...</div>' +
+    '</div>';
+  drawer.classList.remove('hidden');
+  backdrop.classList.remove('hidden');
+
+  var action = 'production_' + briefType;
+
+  setTimeout(function() {
+    var aiResponse = (typeof mockAI === 'function') ? mockAI({}, action, {}) : null;
+    if (!aiResponse || !aiResponse.draft) {
+      drawerBody.innerHTML = '<div class="p-4 text-sm text-slate-500">No response configured for this brief type.</div>';
+      return;
+    }
+
+    drawerBody.innerHTML =
+      '<div class="space-y-5">' +
+        '<div class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl p-4">' +
+          '<div class="flex items-center gap-2 mb-2">' +
+            '<span class="text-lg">&#129302;</span>' +
+            '<h2 class="text-lg font-bold text-indigo-900">' + (titles[briefType] || 'Production Brief') + '</h2>' +
+            '<span class="px-2 py-0.5 bg-indigo-200 text-indigo-800 text-xs font-bold rounded">AI GENERATED</span>' +
+          '</div>' +
+          '<p class="text-xs text-indigo-700">Generated from live factory data — ' + new Date().toLocaleString() + '</p>' +
+        '</div>' +
+        '<div class="bg-white border border-slate-200 rounded-lg p-5 text-sm text-slate-800 leading-relaxed whitespace-pre-line">' +
+          aiResponse.draft +
+        '</div>' +
+      '</div>';
+  }, 800);
+};
+
+/**
+ * Export Production Snapshot — shows toast notification
+ */
+window.exportProductionSnapshot = function() {
+  if (typeof showNotification === 'function') {
+    showNotification('Production snapshot exported successfully. Check your downloads folder.', 'success');
+  }
+};
+
+/**
+ * Report Center — modal for template selection, preview, send, and scheduling
+ */
+window.openReportCenter = function() {
+  // Remove existing modal if any
+  var existing = document.getElementById('reportCenterModal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'reportCenterModal';
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+  modal.innerHTML =
+    '<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeReportCenter()"></div>' +
+    '<div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden mx-4">' +
+      // Header
+      '<div class="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-6 py-4">' +
+        '<div class="flex items-center justify-between">' +
+          '<div>' +
+            '<h2 class="text-lg font-bold">Report Center</h2>' +
+            '<p class="text-violet-200 text-xs">Generate, preview, and distribute reports</p>' +
+          '</div>' +
+          '<button onclick="closeReportCenter()" class="text-white/70 hover:text-white text-xl" style="cursor:pointer;">&times;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="overflow-y-auto p-6 space-y-5" style="max-height: calc(85vh - 60px);">' +
+        // Step 1: Template Selection
+        '<div>' +
+          '<h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-5 h-5 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center text-xs font-bold">1</span> Select Template</h3>' +
+          '<div class="grid grid-cols-3 gap-3">' +
+            '<label class="cursor-pointer">' +
+              '<input type="radio" name="reportTemplate" value="daily_brief" class="hidden peer" checked>' +
+              '<div class="peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:bg-violet-50 border border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition-all">' +
+                '<div class="text-2xl mb-2">&#128203;</div>' +
+                '<div class="text-sm font-semibold text-slate-800">Daily Brief</div>' +
+                '<div class="text-xs text-slate-500 mt-1">BOD/EOD structured summary</div>' +
+              '</div>' +
+            '</label>' +
+            '<label class="cursor-pointer">' +
+              '<input type="radio" name="reportTemplate" value="weekly_summary" class="hidden peer">' +
+              '<div class="peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:bg-violet-50 border border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition-all">' +
+                '<div class="text-2xl mb-2">&#128200;</div>' +
+                '<div class="text-sm font-semibold text-slate-800">Weekly Summary</div>' +
+                '<div class="text-xs text-slate-500 mt-1">Commit, gaps, decisions, risks</div>' +
+              '</div>' +
+            '</label>' +
+            '<label class="cursor-pointer">' +
+              '<input type="radio" name="reportTemplate" value="exec_report" class="hidden peer">' +
+              '<div class="peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:bg-violet-50 border border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition-all">' +
+                '<div class="text-2xl mb-2">&#127919;</div>' +
+                '<div class="text-sm font-semibold text-slate-800">Exec Report</div>' +
+                '<div class="text-xs text-slate-500 mt-1">VP-level health + key asks</div>' +
+              '</div>' +
+            '</label>' +
+          '</div>' +
+        '</div>' +
+        // Step 2: Scope
+        '<div>' +
+          '<h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-5 h-5 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center text-xs font-bold">2</span> Report Scope</h3>' +
+          '<div class="grid grid-cols-3 gap-3">' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Program</label>' +
+              '<select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">' +
+                '<option>All Programs</option><option>Product A</option><option>Product B</option><option>Product C</option><option>Product D</option>' +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Site</label>' +
+              '<select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">' +
+                '<option>All Sites</option><option>WF</option><option>VN02</option>' +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Period</label>' +
+              '<select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">' +
+                '<option>This Week (W11)</option><option>Last Week (W10)</option><option>This Month</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        // Step 3: Send Options
+        '<div>' +
+          '<h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-5 h-5 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center text-xs font-bold">3</span> Distribution</h3>' +
+          '<div class="space-y-3">' +
+            '<div class="flex flex-wrap gap-2">' +
+              '<label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">' +
+                '<input type="checkbox" class="rounded text-violet-600"> <span class="text-sm text-slate-700">Email</span>' +
+              '</label>' +
+              '<label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">' +
+                '<input type="checkbox" class="rounded text-violet-600"> <span class="text-sm text-slate-700">Slack</span>' +
+              '</label>' +
+              '<label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">' +
+                '<input type="checkbox" class="rounded text-violet-600"> <span class="text-sm text-slate-700">WeChat</span>' +
+              '</label>' +
+            '</div>' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Send to (people)</label>' +
+              '<div class="flex flex-wrap gap-2 border border-slate-200 rounded-lg p-2.5 min-h-[40px]">' +
+                '<span class="px-2 py-1 bg-violet-100 text-violet-800 text-xs rounded-full flex items-center gap-1">Wei Chen <button class="text-violet-400 hover:text-violet-600">&times;</button></span>' +
+                '<span class="px-2 py-1 bg-violet-100 text-violet-800 text-xs rounded-full flex items-center gap-1">David Liu <button class="text-violet-400 hover:text-violet-600">&times;</button></span>' +
+                '<input type="text" class="text-sm text-slate-700 outline-none flex-1 min-w-[100px]" placeholder="Add recipient...">' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        // Step 4: Schedule (optional)
+        '<div class="bg-slate-50 rounded-xl p-4 border border-slate-200">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><span class="w-5 h-5 bg-slate-200 text-slate-600 rounded-full flex items-center justify-center text-xs font-bold">4</span> Schedule (Optional)</h3>' +
+            '<label class="relative inline-flex items-center cursor-pointer">' +
+              '<input type="checkbox" id="reportScheduleToggle" class="sr-only peer">' +
+              '<div class="w-9 h-5 bg-slate-300 peer-checked:bg-violet-600 rounded-full transition-colors"></div>' +
+              '<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow"></div>' +
+            '</label>' +
+          '</div>' +
+          '<div class="grid grid-cols-2 gap-3 opacity-50" id="reportScheduleFields">' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Frequency</label>' +
+              '<select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">' +
+                '<option>Weekly</option><option>Daily</option><option>Bi-weekly</option><option>Monthly</option>' +
+              '</select>' +
+            '</div>' +
+            '<div>' +
+              '<label class="text-xs text-slate-500 mb-1 block">Day & Time</label>' +
+              '<div class="flex gap-2">' +
+                '<select class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">' +
+                  '<option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>' +
+                '</select>' +
+                '<input type="time" value="08:00" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        // Actions
+        '<div class="flex items-center justify-between pt-2">' +
+          '<button onclick="previewReport()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50" style="cursor:pointer;">Preview Report</button>' +
+          '<div class="flex gap-2">' +
+            '<button onclick="closeReportCenter()" class="px-4 py-2 text-slate-600 text-sm font-medium hover:text-slate-900" style="cursor:pointer;">Cancel</button>' +
+            '<button onclick="generateAndSendReport()" class="px-5 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-lg text-sm font-semibold hover:from-violet-700 hover:to-fuchsia-700 shadow-sm" style="cursor:pointer;">Generate & Send</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(modal);
+
+  // Schedule toggle logic
+  var toggle = document.getElementById('reportScheduleToggle');
+  var fields = document.getElementById('reportScheduleFields');
+  if (toggle && fields) {
+    toggle.addEventListener('change', function() {
+      fields.style.opacity = this.checked ? '1' : '0.5';
+      fields.style.pointerEvents = this.checked ? 'auto' : 'none';
+    });
+    fields.style.pointerEvents = 'none';
+  }
+};
+
+window.closeReportCenter = function() {
+  var modal = document.getElementById('reportCenterModal');
+  if (modal) modal.remove();
+};
+
+window.previewReport = function() {
+  var selected = document.querySelector('input[name="reportTemplate"]:checked');
+  var briefType = selected ? selected.value : 'daily_brief';
+  closeReportCenter();
+  var typeMap = { daily_brief: 'daily_brief', weekly_summary: 'exec_summary', exec_report: 'exec_summary' };
+  generateProductionBrief(typeMap[briefType] || 'daily_brief');
+};
+
+window.generateAndSendReport = function() {
+  closeReportCenter();
+  if (typeof showNotification === 'function') {
+    showNotification('Report generated and sent to selected recipients.', 'success');
+  }
+};
 
 /**
  * Render MO KPIs page V4
@@ -10602,18 +12464,24 @@ function renderMOKpis() {
   // Get KPI data for selected product
   const kpiData = getKPIDataByProduct(currentProduct);
 
-  // Calculate Overall Health Score
-  const healthScore = Math.round(
-    (kpiData.production.current / kpiData.production.target * 100 * 0.25) +
-    (kpiData.shipment.current / kpiData.shipment.target * 100 * 0.25) +
-    (kpiData.labor.fulfillmentRate * 0.20) +
-    ((100 - Math.abs(kpiData.fvCost.variance)) * 0.15) +
-    (kpiData.campus.readiness * 0.15)
+  // Calculate sub-scores using SCO-aligned formula
+  const sco = kpiData.sco;
+  const execScore = Math.round(
+    Math.min(100, sco.commitAttainment.current) * 0.30 +
+    Math.min(100, sco.scheduleAdherence.current) * 0.25 +
+    Math.min(100, sco.capacityUtilization.current / sco.capacityUtilization.target * 100) * 0.20 +
+    Math.min(100, sco.btoCtoOnTimeShip.current / sco.btoCtoOnTimeShip.target * 100) * 0.25
   );
+  const resourceScore = Math.round(
+    (kpiData.labor.fulfillmentRate) * 0.5 +
+    (kpiData.campus.readiness) * 0.5
+  );
+  const costScore = Math.round(100 - Math.abs(kpiData.fvCost.variance));
+  const healthScore = Math.round(execScore * 0.45 + resourceScore * 0.30 + costScore * 0.25);
 
   const formatNumber = (num) => num.toLocaleString('en-US');
   const formatPercent = (num) => (num >= 0 ? '+' : '') + num.toFixed(1) + '%';
-  
+
   // Generate area chart for trend
   const generateAreaChart = (data, color = '#60a5fa') => {
     const max = Math.max(...data);
@@ -10621,361 +12489,582 @@ function renderMOKpis() {
     const range = max - min || 1;
     const width = 120;
     const height = 40;
-
     const points = data.map((val, i) => {
       const x = (i / (data.length - 1)) * width;
       const y = height - ((val - min) / range) * height;
       return x + ',' + y;
     }).join(' ');
-
     const areaPoints = '0,' + height + ' ' + points + ' ' + width + ',' + height;
-
-    return `<svg width="${width}" height="${height}" class="inline-block">
-      <defs>
-        <linearGradient id="gradient-${color.replace('#','')}" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:${color};stop-opacity:0.3" />
-          <stop offset="100%" style="stop-color:${color};stop-opacity:0.05" />
-        </linearGradient>
-      </defs>
-      <polygon points="${areaPoints}" fill="url(#gradient-${color.replace('#','')})" />
-      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2"/>
-    </svg>`;
+    return '<svg width="' + width + '" height="' + height + '" class="inline-block">' +
+      '<defs><linearGradient id="gradient-' + color.replace('#','') + '" x1="0%" y1="0%" x2="0%" y2="100%">' +
+      '<stop offset="0%" style="stop-color:' + color + ';stop-opacity:0.3" />' +
+      '<stop offset="100%" style="stop-color:' + color + ';stop-opacity:0.05" />' +
+      '</linearGradient></defs>' +
+      '<polygon points="' + areaPoints + '" fill="url(#gradient-' + color.replace('#','') + ')" />' +
+      '<polyline points="' + points + '" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+      '</svg>';
   };
 
-  // Generate circular progress
-  const generateCircularProgress = (percent, color = '#60a5fa') => {
-    const radius = 35;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percent / 100) * circumference;
-    
-    return `<svg width="90" height="90" class="transform -rotate-90">
-      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="#e5e7eb" stroke-width="6"/>
-      <circle cx="45" cy="45" r="${radius}" fill="none" stroke="${color}" stroke-width="6" 
-              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" 
-              stroke-linecap="round" class="transition-all duration-500"/>
-    </svg>`;
+  // Health bar helper
+  const healthBar = function(label, score, color) {
+    var barColor = score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-amber-500' : 'bg-red-500';
+    if (color) barColor = color;
+    return '<div class="flex items-center gap-3">' +
+      '<div class="text-xs text-blue-200 w-20">' + label + '</div>' +
+      '<div class="flex-1 bg-white/20 rounded-full h-2"><div class="' + barColor + ' h-2 rounded-full transition-all duration-500" style="width:' + Math.min(score, 100) + '%"></div></div>' +
+      '<div class="text-sm font-bold text-white w-8 text-right">' + score + '</div>' +
+    '</div>';
   };
 
-  content.innerHTML = `
-    <div class="space-y-6">
-      <!-- Header with gradient -->
-      <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h1 class="text-3xl font-bold mb-2">Manufacturing Operations KPIs</h1>
-            <p class="text-blue-200 text-sm">Real-time operational metrics and insights</p>
-          </div>
-          <div class="text-right">
-            <div class="text-sm text-blue-200 mb-1">Overall Health</div>
-            <div class="text-5xl font-bold">${healthScore}</div>
-            <div class="text-xs text-blue-300 mt-1">${healthScore >= 80 ? 'GOOD' : healthScore >= 60 ? 'FAIR' : 'AT RISK'}</div>
-          </div>
-        </div>
-        <div class="flex items-center gap-3 pt-4 border-t border-white/20">
-          <label class="text-blue-200 text-sm">Product:</label>
-          <select
-            id="moKpisProductSelect"
-            class="bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onchange="STATE.filters.product = this.value; window.Router ? window.Router.navigate('moKpis', this.value) : render();"
-          >
-            <option value="A" ${currentProduct === 'A' ? 'selected' : ''}>Product A</option>
-            <option value="B" ${currentProduct === 'B' ? 'selected' : ''}>Product B</option>
-            <option value="C" ${currentProduct === 'C' ? 'selected' : ''}>Product C</option>
-            <option value="D" ${currentProduct === 'D' ? 'selected' : ''}>Product D</option>
-          </select>
-          <div class="text-blue-200 text-xs ml-auto">Viewing: <span class="font-semibold text-white">Product ${currentProduct}</span></div>
-        </div>
-      </div>
+  // Score color helper
+  var scoreColor = function(s) { return s >= 90 ? 'text-emerald-400' : s >= 75 ? 'text-amber-400' : 'text-red-400'; };
+  var scoreLabel = function(s) { return s >= 90 ? 'GOOD' : s >= 75 ? 'FAIR' : 'AT RISK'; };
 
-      <!-- Main KPI Cards with Tech Style -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Production Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">📦 Production</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.production.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.production.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(91.6, '#3b82f6')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">92%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.production.weeklyTrend, '#3b82f6')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.production.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.production.driver}</div>
-          </div>
-        </div>
+  // Priority actions data — computed from KPI signals
+  var prodGapPct = ((kpiData.production.current - kpiData.production.target) / kpiData.production.target * 100).toFixed(1);
+  var laborGapHC = kpiData.labor.current - kpiData.labor.target;
 
-        <!-- Shipment Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">🚚 Shipment</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.shipment.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.shipment.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(92.1, '#10b981')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">92%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.shipment.weeklyTrend, '#10b981')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.shipment.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.shipment.driver}</div>
-          </div>
-        </div>
+  // Build the page
+  content.innerHTML =
+    '<div class="space-y-6">' +
 
-        <!-- Labor Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">👥 Labor</div>
-              <div class="text-3xl font-bold text-slate-900">${formatNumber(kpiData.labor.current)}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${formatNumber(kpiData.labor.target)}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(94.2, '#8b5cf6')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">94%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.labor.weeklyTrend, '#8b5cf6')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.labor.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.labor.driver}</div>
-          </div>
-        </div>
+    // ── Section 1: Header + Operational Health Index ──
+    '<div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 text-white shadow-2xl">' +
+      '<div class="flex items-center justify-between mb-5">' +
+        '<div>' +
+          '<h1 class="text-3xl font-bold mb-1">Manufacturing Operations KPIs</h1>' +
+          '<p class="text-blue-300 text-sm">Operational health monitor — system health view for MO execution</p>' +
+        '</div>' +
+        '<div class="text-right">' +
+          '<div class="text-xs text-blue-300 uppercase tracking-wider mb-1">Operational Health Index</div>' +
+          '<div class="text-5xl font-bold ' + scoreColor(healthScore) + '">' + healthScore + '</div>' +
+          '<div class="text-xs font-semibold mt-1 ' + scoreColor(healthScore) + '">' + scoreLabel(healthScore) + '</div>' +
+        '</div>' +
+      '</div>' +
+      // Sub-score bars
+      '<div class="space-y-2 mb-5">' +
+        healthBar('Execution', execScore) +
+        healthBar('Resources', resourceScore) +
+        healthBar('Cost', costScore) +
+      '</div>' +
+      '<div class="flex items-center gap-3 pt-4 border-t border-white/20">' +
+        '<label class="text-blue-200 text-sm">Product:</label>' +
+        '<select id="moKpisProductSelect" class="bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400" onchange="STATE.filters.product = this.value; window.Router ? window.Router.navigate(\'moKpis\', this.value) : render();">' +
+          '<option value="A"' + (currentProduct === 'A' ? ' selected' : '') + '>Product A</option>' +
+          '<option value="B"' + (currentProduct === 'B' ? ' selected' : '') + '>Product B</option>' +
+          '<option value="C"' + (currentProduct === 'C' ? ' selected' : '') + '>Product C</option>' +
+          '<option value="D"' + (currentProduct === 'D' ? ' selected' : '') + '>Product D</option>' +
+        '</select>' +
+        '<div class="text-blue-200 text-xs ml-auto">Viewing: <span class="font-semibold text-white">Product ' + currentProduct + '</span></div>' +
+      '</div>' +
+    '</div>' +
 
-        <!-- FV Cost Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">💰 FV Cost</div>
-              <div class="text-3xl font-bold text-slate-900">$${kpiData.fvCost.current}</div>
-              <div class="text-xs text-slate-500 mt-1">Target: $${kpiData.fvCost.target}</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(96.2, '#f59e0b')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">96%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.fvCost.weeklyTrend, '#f59e0b')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold ${kpiData.fvCost.wow >= 0 ? 'text-red-600' : 'text-green-600'}">${formatPercent(kpiData.fvCost.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.fvCost.driver}</div>
-          </div>
-        </div>
+    // ── Section 2: Priority Actions (moved up!) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-500"></span>Priority Actions</h3>' +
+      '<div class="space-y-3">' +
+        // HIGH action — cost signal
+        '<div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4">' +
+          '<div class="flex items-start justify-between mb-2">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>' +
+              '<span class="font-semibold text-slate-900">FV cost above target (' + formatPercent(kpiData.fvCost.variance) + ')</span>' +
+            '</div>' +
+            '<span class="text-xs text-slate-500">SLA: 48h</span>' +
+          '</div>' +
+          '<div class="text-sm text-slate-600 mb-2">Impact: +$12k weekly exposure | Owner: ' + kpiData.fvCost.owner + ' | Driver: ' + kpiData.fvCost.driver + '</div>' +
+          '<div class="mt-3 flex gap-2">' +
+            '<button onclick="window.Router && window.Router.navigate(\'fvCostManagement\')" class="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700" style="cursor:pointer;">View Signal</button>' +
+            '<button class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50" style="cursor:pointer;">Request Plan</button>' +
+          '</div>' +
+        '</div>' +
+        // MEDIUM actions row
+        '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
+          '<div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">' +
+            '<div class="flex items-center gap-2 mb-2">' +
+              '<span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>' +
+              '<span class="text-sm font-semibold text-slate-900">Production gap (' + prodGapPct + '%)</span>' +
+            '</div>' +
+            '<div class="text-xs text-slate-600 mb-2">' + formatNumber(kpiData.production.current - kpiData.production.target) + ' units vs plan | ' + kpiData.production.owner + ' | 24h</div>' +
+            '<button onclick="window.Router && window.Router.navigate(\'productionManagement\')" class="text-xs text-amber-700 font-semibold hover:underline" style="cursor:pointer;">View Signal &rarr;</button>' +
+          '</div>' +
+          '<div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">' +
+            '<div class="flex items-center gap-2 mb-2">' +
+              '<span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>' +
+              '<span class="text-sm font-semibold text-slate-900">Labor fulfillment (' + kpiData.labor.fulfillmentRate + '%)</span>' +
+            '</div>' +
+            '<div class="text-xs text-slate-600 mb-2">' + laborGapHC + ' HC gap | ' + kpiData.labor.owner + ' | 72h</div>' +
+            '<button class="text-xs text-amber-700 font-semibold hover:underline" style="cursor:pointer;">View Signal &rarr;</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-        <!-- Campus Card -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="text-slate-500 text-sm mb-1">🏭 Campus</div>
-              <div class="text-3xl font-bold text-slate-900">${kpiData.campus.readiness}%</div>
-              <div class="text-xs text-slate-500 mt-1">Target: ${kpiData.campus.target}%</div>
-            </div>
-            <div class="relative">
-              ${generateCircularProgress(96.5, '#06b6d4')}
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="text-center">
-                  <div class="text-lg font-bold text-slate-900">97%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            ${generateAreaChart(kpiData.campus.weeklyTrend, '#06b6d4')}
-          </div>
-          
-          <div class="flex items-center justify-between text-xs mb-3">
-            <span class="text-slate-500">WoW</span>
-            <span class="font-semibold text-green-600">${formatPercent(kpiData.campus.wow)}</span>
-          </div>
-          
-          <div class="pt-3 border-t border-slate-100">
-            <div class="text-xs text-slate-600 mb-1">Key Driver</div>
-            <div class="text-sm font-medium text-slate-900">${kpiData.campus.driver}</div>
-          </div>
-        </div>
+    // ── Section 3: Product Availability (SCO P0) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Product Availability</h3>' +
+      '<p class="text-xs text-slate-500 mb-4">SCO Topline — 4 P0 indicators from CM APS + CM MES + CM WMS</p>' +
+      '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">' +
+        // Commit Attainment
+        '<div class="bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Commit Attainment</div>' +
+            '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.commitAttainment.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.commitAttainment.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.commitAttainment.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.commitAttainment.trend, '#3b82f6') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ' + sco.commitAttainment.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM APS + WMS</span>' +
+          '</div>' +
+        '</div>' +
+        // Schedule Adherence
+        '<div class="bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-indigo-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Schedule Adherence</div>' +
+            '<span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.scheduleAdherence.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.scheduleAdherence.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.scheduleAdherence.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.scheduleAdherence.trend, '#6366f1') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ' + sco.scheduleAdherence.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM APS + MES</span>' +
+          '</div>' +
+        '</div>' +
+        // Capacity Utilization
+        '<div class="bg-gradient-to-br from-cyan-50 to-white rounded-xl border border-cyan-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-cyan-600 uppercase tracking-wider">Capacity Utilization</div>' +
+            '<span class="px-1.5 py-0.5 bg-cyan-100 text-cyan-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.capacityUtilization.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.capacityUtilization.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.capacityUtilization.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.capacityUtilization.trend, '#06b6d4') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ≥' + sco.capacityUtilization.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM APS + MES</span>' +
+          '</div>' +
+        '</div>' +
+        // Capacity Shortage
+        '<div class="bg-gradient-to-br from-rose-50 to-white rounded-xl border border-rose-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Capacity Shortage</div>' +
+            '<span class="px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.capacityShortage.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.capacityShortage.wow <= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.capacityShortage.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.capacityShortage.trend, '#f43f5e') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: <' + sco.capacityShortage.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM APS</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-        <!-- Additional KPI Placeholder -->
-        <div class="bg-gradient-to-br from-slate-100 to-slate-50 rounded-2xl shadow-lg border border-slate-200 p-6 flex items-center justify-center">
-          <div class="text-center">
-            <div class="text-4xl mb-3">📊</div>
-            <div class="text-sm font-semibold text-slate-600">More KPIs</div>
-            <div class="text-xs text-slate-400 mt-1">Coming soon</div>
-          </div>
-        </div>
-      </div>
+    // ── Section 3b: Delivery & Agility (SCO) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Delivery & Agility</h3>' +
+      '<p class="text-xs text-slate-500 mb-4">SCO Topline — Lead time and on-time delivery metrics from CM MES via QuatumnBridge</p>' +
+      '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">' +
+        // Manufacturing Lead Time
+        '<div class="bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Mfg Lead Time</div>' +
+            '<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div><div class="text-2xl font-bold text-slate-900">' + sco.mfgLeadTime.current.toFixed(1) + '<span class="text-sm text-slate-400 ml-1">days</span></div></div>' +
+            '<div class="text-sm font-bold ' + (sco.mfgLeadTime.wow <= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + (sco.mfgLeadTime.wow >= 0 ? '+' : '') + sco.mfgLeadTime.wow.toFixed(1) + 'd</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.mfgLeadTime.trend, '#10b981') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ≤' + sco.mfgLeadTime.target + ' days</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM MES</span>' +
+          '</div>' +
+        '</div>' +
+        // LT Achieve Rate
+        '<div class="bg-gradient-to-br from-teal-50 to-white rounded-xl border border-teal-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-teal-600 uppercase tracking-wider">LT Achieve Rate</div>' +
+            '<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.ltAchieveRate.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.ltAchieveRate.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.ltAchieveRate.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.ltAchieveRate.trend, '#14b8a6') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ≥' + sco.ltAchieveRate.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM MES</span>' +
+          '</div>' +
+        '</div>' +
+        // BTO/CTO Mfg Lead Time
+        '<div class="bg-gradient-to-br from-purple-50 to-white rounded-xl border border-purple-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-purple-600 uppercase tracking-wider">BTO/CTO Lead Time</div>' +
+            '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div><div class="text-2xl font-bold text-slate-900">' + sco.btoCtoLeadTime.current.toFixed(1) + '<span class="text-sm text-slate-400 ml-1">days</span></div></div>' +
+            '<div class="text-sm font-bold ' + (sco.btoCtoLeadTime.wow <= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + (sco.btoCtoLeadTime.wow >= 0 ? '+' : '') + sco.btoCtoLeadTime.wow.toFixed(1) + 'd</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.btoCtoLeadTime.trend, '#a855f7') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ≤' + sco.btoCtoLeadTime.target + ' days</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM MES</span>' +
+          '</div>' +
+        '</div>' +
+        // BTO/CTO On-Time Ship
+        '<div class="bg-gradient-to-br from-violet-50 to-white rounded-xl border border-violet-100 p-4">' +
+          '<div class="flex items-center justify-between mb-1">' +
+            '<div class="text-[10px] font-bold text-violet-600 uppercase tracking-wider">BTO/CTO On-Time Ship</div>' +
+            '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div class="text-2xl font-bold text-slate-900">' + sco.btoCtoOnTimeShip.current.toFixed(1) + '%</div>' +
+            '<div class="text-sm font-bold ' + (sco.btoCtoOnTimeShip.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(sco.btoCtoOnTimeShip.wow) + '</div>' +
+          '</div>' +
+          '<div class="mb-2">' + generateAreaChart(sco.btoCtoOnTimeShip.trend, '#8b5cf6') + '</div>' +
+          '<div class="flex items-center justify-between text-[10px]">' +
+            '<span class="text-slate-500">Target: ≥' + sco.btoCtoOnTimeShip.target + '%</span>' +
+            '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 rounded font-medium">CM MES</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-      <!-- Site Comparison with Modern Style -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">🏭 Site Performance Comparison</h3>
-        
-        <div class="grid grid-cols-2 gap-6">
-          <!-- WF Site -->
-          <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-            <div class="flex items-center justify-between mb-4">
-              <div class="text-xl font-bold text-slate-900">WF Site</div>
-              <div class="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Primary</div>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-600">Output</span>
-                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.wf.current)}</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-2">
-                <div class="bg-blue-600 h-2 rounded-full" style="width: ${(kpiData.production.wf.current / kpiData.production.wf.target * 100)}%"></div>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Yield</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.production.wf.yield}%</span>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Labor Fill</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.labor.wf.fill}%</span>
-              </div>
-            </div>
-          </div>
+    // ── Section 4: Readiness (SCO) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span>Readiness</h3>' +
+      '<p class="text-xs text-slate-500 mb-4">SCO Topline — Labor, campus readiness and utilization from CM Labor Tracker + Campus Database</p>' +
+      '<div class="grid grid-cols-1 md:grid-cols-3 gap-5">' +
+        // Labor Fulfillment
+        '<div class="bg-gradient-to-br from-purple-50 to-white rounded-xl border border-purple-100 p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Labor Fulfillment</div>' +
+            '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-3">' +
+            '<div class="text-2xl font-bold text-slate-900">' + kpiData.labor.fulfillmentRate + '%</div>' +
+            '<div class="text-sm font-semibold ' + (kpiData.labor.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(kpiData.labor.wow) + ' WoW</div>' +
+          '</div>' +
+          '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-3"><div class="bg-purple-500 h-2.5 rounded-full" style="width:' + Math.min(100, kpiData.labor.fulfillmentRate) + '%"></div></div>' +
+          '<div class="text-xs text-slate-600">' + formatNumber(kpiData.labor.current) + ' / ' + formatNumber(kpiData.labor.target) + ' HC</div>' +
+          '<div class="pt-3 mt-3 border-t border-purple-100 flex items-center justify-between">' +
+            '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded font-medium">CM Labor Tracker · csv</span>' +
+            '<span class="text-[10px] text-slate-400">Weekly</span>' +
+          '</div>' +
+        '</div>' +
+        // Campus Readiness On-Time
+        '<div class="bg-gradient-to-br from-amber-50 to-white rounded-xl border border-amber-100 p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Campus Readiness</div>' +
+            '<span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-3">' +
+            '<div class="text-2xl font-bold text-slate-900">' + kpiData.campus.readiness + '%</div>' +
+            '<div class="text-sm font-semibold ' + (kpiData.campus.wow >= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(kpiData.campus.wow) + ' WoW</div>' +
+          '</div>' +
+          '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-3"><div class="bg-amber-500 h-2.5 rounded-full" style="width:' + kpiData.campus.readiness + '%"></div></div>' +
+          '<div class="text-xs text-slate-600">Target: ' + kpiData.campus.target + '% | Open issues: ' + kpiData.campus.issues + '</div>' +
+          '<div class="pt-3 mt-3 border-t border-amber-100 flex items-center justify-between">' +
+            '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded font-medium">Campus Database · csv</span>' +
+            '<span class="text-[10px] text-slate-400">Monthly</span>' +
+          '</div>' +
+        '</div>' +
+        // Campus Utilization
+        '<div class="bg-gradient-to-br from-orange-50 to-white rounded-xl border border-orange-100 p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Campus Utilization</div>' +
+            '<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-3">' +
+            '<div class="text-2xl font-bold text-slate-900">' + kpiData.campus.utilization + '%</div>' +
+            '<div class="text-sm font-semibold ' + (kpiData.campus.utilization >= kpiData.campus.utilizationTarget ? 'text-emerald-600' : 'text-amber-600') + '">' + (kpiData.campus.utilization >= kpiData.campus.utilizationTarget ? 'On target' : 'Below target') + '</div>' +
+          '</div>' +
+          '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-3"><div class="bg-orange-500 h-2.5 rounded-full" style="width:' + kpiData.campus.utilization + '%"></div></div>' +
+          '<div class="text-xs text-slate-600">Target: >' + kpiData.campus.utilizationTarget + '% | Line installed / reserved</div>' +
+          '<div class="pt-3 mt-3 border-t border-orange-100 flex items-center justify-between">' +
+            '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded font-medium">Campus Database · csv</span>' +
+            '<span class="text-[10px] text-slate-400">Monthly</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-          <!-- VN02 Site -->
-          <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-5 border border-green-100">
-            <div class="flex items-center justify-between mb-4">
-              <div class="text-xl font-bold text-slate-900">VN02 Site</div>
-              <div class="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">Secondary</div>
-            </div>
-            
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-600">Output</span>
-                <span class="text-lg font-bold text-slate-900">${formatNumber(kpiData.production.vn02.current)}</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-2">
-                <div class="bg-green-600 h-2 rounded-full" style="width: ${(kpiData.production.vn02.current / kpiData.production.vn02.target * 100)}%"></div>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Yield</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.production.vn02.yield}%</span>
-              </div>
-              
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-sm text-slate-600">Labor Fill</span>
-                <span class="text-lg font-bold text-slate-900">${kpiData.labor.vn02.fill}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // ── Section 5: Cost (SCO) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Cost</h3>' +
+      '<p class="text-xs text-slate-500 mb-4">SCO Topline — FV cost tracking from FV Database via Mulesoft</p>' +
+      '<div class="grid grid-cols-1 md:grid-cols-3 gap-5">' +
+        // FV Cost per Unit
+        '<div class="bg-gradient-to-br from-amber-50 to-white rounded-xl border border-amber-100 p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">FV Cost per Unit</div>' +
+            '<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div>' +
+              '<div class="text-2xl font-bold text-slate-900">$' + kpiData.fvCost.current + '</div>' +
+              '<div class="text-xs text-slate-500">Target: $' + kpiData.fvCost.target + '</div>' +
+            '</div>' +
+            '<div class="text-right">' +
+              '<div class="text-lg font-bold ' + (kpiData.fvCost.wow <= 0 ? 'text-emerald-600' : 'text-red-600') + '">' + formatPercent(kpiData.fvCost.wow) + '</div>' +
+              '<div class="text-xs text-slate-400">WoW</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="mb-3">' + generateAreaChart(kpiData.fvCost.weeklyTrend, '#f59e0b') + '</div>' +
+          '<div class="pt-3 border-t border-amber-100 flex items-center justify-between">' +
+            '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded font-medium">FV Database · csv</span>' +
+            '<button onclick="window.Router && window.Router.navigate(\'fvCostManagement\')" class="text-xs text-amber-600 font-semibold hover:underline" style="cursor:pointer;">View Signal &rarr;</button>' +
+          '</div>' +
+        '</div>' +
+        // FV Negotiation Rate (NEW)
+        '<div class="bg-gradient-to-br from-green-50 to-white rounded-xl border border-green-100 p-5">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">FV Negotiation Rate</div>' +
+            '<span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span>' +
+          '</div>' +
+          '<div class="flex items-end justify-between mb-2">' +
+            '<div>' +
+              '<div class="text-2xl font-bold text-slate-900">' + kpiData.fvCost.negotiationRate + '%</div>' +
+              '<div class="text-xs text-slate-500">Target: >20%</div>' +
+            '</div>' +
+            '<div class="text-right">' +
+              '<div class="text-lg font-bold ' + (kpiData.fvCost.negotiationRate >= 20 ? 'text-emerald-600' : 'text-amber-600') + '">' + (kpiData.fvCost.negotiationRate >= 20 ? 'On target' : 'Below') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="w-full bg-slate-200 rounded-full h-2.5 mb-3"><div class="' + (kpiData.fvCost.negotiationRate >= 20 ? 'bg-emerald-500' : 'bg-amber-500') + ' h-2.5 rounded-full" style="width:' + Math.min(100, kpiData.fvCost.negotiationRate / 30 * 100) + '%"></div></div>' +
+          '<div class="text-xs text-slate-600">Cost reduction through negotiation / total validated cost</div>' +
+          '<div class="pt-3 mt-3 border-t border-green-100 flex items-center justify-between">' +
+            '<span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded font-medium">FV Database · csv</span>' +
+            '<span class="text-[10px] text-slate-400">By need</span>' +
+          '</div>' +
+        '</div>' +
+        // Cost breakdown
+        '<div class="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 p-5">' +
+          '<div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Cost Breakdown (per unit)</div>' +
+          '<div class="grid grid-cols-2 gap-2">' +
+            '<div class="text-center p-2.5 bg-white rounded-lg border border-slate-100">' +
+              '<div class="text-lg font-bold text-slate-800">$' + kpiData.fvCost.breakdown.material + '</div>' +
+              '<div class="text-[10px] text-slate-500">Material · ' + Math.round(kpiData.fvCost.breakdown.material / kpiData.fvCost.current * 100) + '%</div>' +
+            '</div>' +
+            '<div class="text-center p-2.5 bg-white rounded-lg border border-slate-100">' +
+              '<div class="text-lg font-bold text-slate-800">$' + kpiData.fvCost.breakdown.labor + '</div>' +
+              '<div class="text-[10px] text-slate-500">Labor · ' + Math.round(kpiData.fvCost.breakdown.labor / kpiData.fvCost.current * 100) + '%</div>' +
+            '</div>' +
+            '<div class="text-center p-2.5 bg-white rounded-lg border border-slate-100">' +
+              '<div class="text-lg font-bold text-slate-800">$' + kpiData.fvCost.breakdown.overhead + '</div>' +
+              '<div class="text-[10px] text-slate-500">Overhead · ' + Math.round(kpiData.fvCost.breakdown.overhead / kpiData.fvCost.current * 100) + '%</div>' +
+            '</div>' +
+            '<div class="text-center p-2.5 bg-white rounded-lg border border-slate-100">' +
+              '<div class="text-lg font-bold text-slate-800">$' + kpiData.fvCost.breakdown.rework + '</div>' +
+              '<div class="text-[10px] text-slate-500">Rework · ' + Math.round(kpiData.fvCost.breakdown.rework / kpiData.fvCost.current * 100) + '%</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-      <!-- Priority Decisions -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-900 mb-4">⚠️ Priority Actions</h3>
-        
-        <div class="space-y-3">
-          <div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>
-                <span class="font-semibold text-slate-900">FV cost above target (+3.8%)</span>
-              </div>
-              <span class="text-xs text-slate-500">48h</span>
-            </div>
-            <div class="text-sm text-slate-600 mb-3">Impact: +$XXk weekly exposure | Owner: Finance | Confidence: ●●●●○</div>
-            <div class="text-xs text-slate-500">Material premium freight +$8k | Rework cost +$4k</div>
-            <div class="mt-3 flex gap-2">
-              <button class="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700">Open Analysis</button>
-              <button class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50">Request Plan</button>
-            </div>
-          </div>
+    // ── Section 6: KPI Item Detail (by SCO Topline) ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">' +
+      '<div class="p-6 pb-0">' +
+        '<h3 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-indigo-500"></span>KPI Item Detail</h3>' +
+        '<p class="text-xs text-slate-500 mb-4">Drill down by SCO Topline — real system sources, integration paths, and DRI ownership</p>' +
+      '</div>' +
+      '<div class="border-b border-slate-200">' +
+        '<nav class="flex gap-0 px-6 overflow-x-auto" role="tablist">' +
+          '<button id="tab-availability" onclick="switchMOKpiTab(\'availability\')" class="px-4 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600 whitespace-nowrap">Product Availability</button>' +
+          '<button id="tab-agility" onclick="switchMOKpiTab(\'agility\')" class="px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap">Agility</button>' +
+          '<button id="tab-delivery" onclick="switchMOKpiTab(\'delivery\')" class="px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap">Timely Delivery</button>' +
+          '<button id="tab-readiness" onclick="switchMOKpiTab(\'readiness\')" class="px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap">Readiness</button>' +
+          '<button id="tab-cost" onclick="switchMOKpiTab(\'cost\')" class="px-4 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap">Cost</button>' +
+        '</nav>' +
+      '</div>' +
+      '<div class="p-6">' +
+        // Product Availability Tab
+        '<div id="tab-content-availability">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead><tr class="bg-blue-50/50">' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">SCO Metric</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Pri</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Current</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Target</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Variance</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Trend</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Source</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Integration</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">DRI</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Freq</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Ex-factory Commit Attainment %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.commitAttainment.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">' + sco.commitAttainment.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.commitAttainment.current >= sco.commitAttainment.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.commitAttainment.current - sco.commitAttainment.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.commitAttainment.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM APS + WMS</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">APS + ASN</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Schedule Adherence %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.scheduleAdherence.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">' + sco.scheduleAdherence.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.scheduleAdherence.current >= sco.scheduleAdherence.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.scheduleAdherence.current - sco.scheduleAdherence.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.scheduleAdherence.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM APS + MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">APS + QB</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Capacity Utilization</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.capacityUtilization.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">≥' + sco.capacityUtilization.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.capacityUtilization.current >= sco.capacityUtilization.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.capacityUtilization.current - sco.capacityUtilization.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.capacityUtilization.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM APS + MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">APS + QB</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Capacity Shortage %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.capacityShortage.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500"><' + sco.capacityShortage.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.capacityShortage.current <= sco.capacityShortage.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.capacityShortage.current - sco.capacityShortage.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.capacityShortage.wow <= 0 ? '<span class="text-emerald-600">&#9660;</span>' : '<span class="text-red-600">&#9650;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM APS</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">APS</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+        // Agility Tab
+        '<div id="tab-content-agility" class="hidden">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead><tr class="bg-green-50/50">' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">SCO Metric</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Pri</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Current</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Target</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Variance</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Trend</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Source</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Integration</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">DRI</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Freq</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Manufacturing Lead Time</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.mfgLeadTime.current.toFixed(1) + ' days</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">≤' + sco.mfgLeadTime.target + ' days</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.mfgLeadTime.current <= sco.mfgLeadTime.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.mfgLeadTime.current - sco.mfgLeadTime.target).toFixed(1) + 'd</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.mfgLeadTime.wow <= 0 ? '<span class="text-emerald-600">&#9660;</span>' : '<span class="text-red-600">&#9650;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">QuatumnBridge</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Mfg Lead Time Achieve Rate</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.ltAchieveRate.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">≥' + sco.ltAchieveRate.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.ltAchieveRate.current >= sco.ltAchieveRate.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.ltAchieveRate.current - sco.ltAchieveRate.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.ltAchieveRate.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">QuatumnBridge</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+        // Timely Delivery Tab
+        '<div id="tab-content-delivery" class="hidden">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead><tr class="bg-purple-50/50">' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">SCO Metric</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Pri</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Current</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Target</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Variance</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Trend</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Source</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Integration</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">DRI</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Freq</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">BTO/CTO Mfg Lead Time</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.btoCtoLeadTime.current.toFixed(1) + ' days</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">≤' + sco.btoCtoLeadTime.target + ' days</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.btoCtoLeadTime.current <= sco.btoCtoLeadTime.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.btoCtoLeadTime.current - sco.btoCtoLeadTime.target).toFixed(1) + 'd</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.btoCtoLeadTime.wow <= 0 ? '<span class="text-emerald-600">&#9660;</span>' : '<span class="text-red-600">&#9650;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">QuatumnBridge</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">BTO/CTO On-Time Ship %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + sco.btoCtoOnTimeShip.current.toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">≥' + sco.btoCtoOnTimeShip.target + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (sco.btoCtoOnTimeShip.current >= sco.btoCtoOnTimeShip.target ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (sco.btoCtoOnTimeShip.current - sco.btoCtoOnTimeShip.target).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (sco.btoCtoOnTimeShip.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM MES</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[10px] rounded">QuatumnBridge</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+        // Readiness Tab
+        '<div id="tab-content-readiness" class="hidden">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead><tr class="bg-amber-50/50">' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">SCO Metric</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Pri</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Current</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Target</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Variance</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Trend</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Source</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Integration</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">DRI</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Freq</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Labor Fulfillment %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + kpiData.labor.fulfillmentRate + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">100%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (kpiData.labor.fulfillmentRate >= 95 ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (kpiData.labor.fulfillmentRate - 100).toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-center">' + (kpiData.labor.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">CM Labor Tracker</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded">csv → Mulesoft</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">CM</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Weekly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Campus Readiness On-Time %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">P0</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + kpiData.campus.readiness + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">100%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (kpiData.campus.readiness >= 100 ? 'text-emerald-600' : 'text-amber-600') + ' font-semibold">' + (kpiData.campus.readiness - 100).toFixed(1) + '%</td><td class="p-2.5 border-b border-slate-100 text-center">' + (kpiData.campus.wow >= 0 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">Campus Database</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded">csv → Mulesoft</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded">MO</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Monthly</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">Campus Utilization %</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + kpiData.campus.utilization + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">>' + kpiData.campus.utilizationTarget + '%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (kpiData.campus.utilization >= kpiData.campus.utilizationTarget ? 'text-emerald-600' : 'text-amber-600') + ' font-semibold">' + (kpiData.campus.utilization - kpiData.campus.utilizationTarget).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="text-amber-500">&#9644;</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">Campus Database</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded">csv → Mulesoft</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded">MO</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Monthly</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+        // Cost Tab
+        '<div id="tab-content-cost" class="hidden">' +
+          '<table class="w-full text-xs border-collapse">' +
+            '<thead><tr class="bg-red-50/50">' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">SCO Metric</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Pri</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Current</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Target</th>' +
+              '<th class="text-right p-2.5 border-b border-slate-200 font-semibold text-slate-600">Variance</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Trend</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Source</th>' +
+              '<th class="text-left p-2.5 border-b border-slate-200 font-semibold text-slate-600">Integration</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">DRI</th>' +
+              '<th class="text-center p-2.5 border-b border-slate-200 font-semibold text-slate-600">Freq</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">FV Negotiation Rate</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">' + kpiData.fvCost.negotiationRate + '%</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">>20%</td><td class="p-2.5 border-b border-slate-100 text-right ' + (kpiData.fvCost.negotiationRate >= 20 ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + (kpiData.fvCost.negotiationRate - 20).toFixed(1) + 'pp</td><td class="p-2.5 border-b border-slate-100 text-center">' + (kpiData.fvCost.negotiationRate >= 20 ? '<span class="text-emerald-600">&#9650;</span>' : '<span class="text-red-600">&#9660;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">FV Database</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded">csv → Mulesoft</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded">MO</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">By need</td></tr>' +
+              '<tr class="hover:bg-slate-50"><td class="p-2.5 border-b border-slate-100 font-medium">FV Cost per Unit</td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">P1</span></td><td class="p-2.5 border-b border-slate-100 text-right font-semibold">$' + kpiData.fvCost.current + '</td><td class="p-2.5 border-b border-slate-100 text-right text-slate-500">$' + kpiData.fvCost.target + '</td><td class="p-2.5 border-b border-slate-100 text-right ' + (kpiData.fvCost.variance <= 0 ? 'text-emerald-600' : 'text-red-600') + ' font-semibold">' + formatPercent(kpiData.fvCost.variance) + '</td><td class="p-2.5 border-b border-slate-100 text-center">' + (kpiData.fvCost.wow <= 0 ? '<span class="text-emerald-600">&#9660;</span>' : '<span class="text-red-600">&#9650;</span>') + '</td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-slate-100 text-[10px] rounded">FV Database</span></td><td class="p-2.5 border-b border-slate-100"><span class="px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[10px] rounded">csv → Mulesoft</span></td><td class="p-2.5 border-b border-slate-100 text-center"><span class="px-1.5 py-0.5 bg-sky-100 text-sky-700 text-[10px] font-bold rounded">MO</span></td><td class="p-2.5 border-b border-slate-100 text-center text-slate-500">Monthly</td></tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
-                <span class="text-sm font-semibold text-slate-900">Production gap (-8.4%)</span>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">–3.2k units vs plan | Operations | 24h</div>
-              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
-            </div>
+    // ── Section 7: Execution by Site ──
+    '<div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">' +
+      '<h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-500"></span>Execution by Site</h3>' +
+      '<div class="grid grid-cols-1 md:grid-cols-2 gap-6">' +
+        // WF Site
+        '<div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">' +
+          '<div class="flex items-center justify-between mb-4">' +
+            '<div class="text-lg font-bold text-slate-900">WF Site</div>' +
+            '<div class="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Primary</div>' +
+          '</div>' +
+          '<div class="space-y-3">' +
+            '<div>' +
+              '<div class="flex items-center justify-between mb-1">' +
+                '<span class="text-sm text-slate-600">Output</span>' +
+                '<span class="text-base font-bold text-slate-900">' + formatNumber(kpiData.production.wf.current) + ' <span class="text-xs font-normal text-slate-400">/ ' + formatNumber(kpiData.production.wf.target) + '</span></span>' +
+              '</div>' +
+              '<div class="w-full bg-slate-200 rounded-full h-2"><div class="bg-blue-600 h-2 rounded-full" style="width:' + Math.min(100, kpiData.production.wf.current / kpiData.production.wf.target * 100) + '%"></div></div>' +
+            '</div>' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-sm text-slate-600">Yield</span>' +
+              '<span class="text-base font-bold ' + (kpiData.production.wf.yield >= 95 ? 'text-emerald-600' : kpiData.production.wf.yield >= 90 ? 'text-amber-600' : 'text-red-600') + '">' + kpiData.production.wf.yield + '%</span>' +
+            '</div>' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-sm text-slate-600">Labor Fill</span>' +
+              '<span class="text-base font-bold text-slate-900">' + kpiData.labor.wf.fill + '%</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        // VN02 Site
+        '<div class="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-5 border border-emerald-100">' +
+          '<div class="flex items-center justify-between mb-4">' +
+            '<div class="text-lg font-bold text-slate-900">VN02 Site</div>' +
+            '<div class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-full">Secondary</div>' +
+          '</div>' +
+          '<div class="space-y-3">' +
+            '<div>' +
+              '<div class="flex items-center justify-between mb-1">' +
+                '<span class="text-sm text-slate-600">Output</span>' +
+                '<span class="text-base font-bold text-slate-900">' + formatNumber(kpiData.production.vn02.current) + ' <span class="text-xs font-normal text-slate-400">/ ' + formatNumber(kpiData.production.vn02.target) + '</span></span>' +
+              '</div>' +
+              '<div class="w-full bg-slate-200 rounded-full h-2"><div class="bg-emerald-600 h-2 rounded-full" style="width:' + Math.min(100, kpiData.production.vn02.current / kpiData.production.vn02.target * 100) + '%"></div></div>' +
+            '</div>' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-sm text-slate-600">Yield</span>' +
+              '<span class="text-base font-bold ' + (kpiData.production.vn02.yield >= 95 ? 'text-emerald-600' : kpiData.production.vn02.yield >= 90 ? 'text-amber-600' : 'text-red-600') + '">' + kpiData.production.vn02.yield + '%</span>' +
+            '</div>' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-sm text-slate-600">Labor Fill</span>' +
+              '<span class="text-base font-bold text-slate-900">' + kpiData.labor.vn02.fill + '%</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded">MEDIUM</span>
-                <span class="text-sm font-semibold text-slate-900">Labor fulfillment (94.2%)</span>
-              </div>
-              <div class="text-xs text-slate-600 mb-2">–150 HC gap | HR / Operations | 72h</div>
-              <button class="text-xs text-amber-700 font-semibold hover:underline">View details →</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+    '</div>';
 }
 
 // Helper function for tab switching
 function switchMOKpiTab(tabName) {
-  ['production', 'shipment', 'labor', 'fvCost', 'campus'].forEach(tab => {
+  ['availability', 'agility', 'delivery', 'readiness', 'cost'].forEach(tab => {
     const btn = document.getElementById(`tab-${tab}`);
     const content = document.getElementById(`tab-content-${tab}`);
     
@@ -11061,99 +13150,138 @@ function renderAlignedIndex() {
   const content = $("dataFoundationContent");
   console.log('[DataFoundation] dataFoundationContent element:', content);
 
-  const metrics = [
+  const kpiGroups = [
     {
-      name: "Ex-factory to Supply Commit Attainment %",
-      target: "≥90%",
-      definition: "Measures the percentage of actual shipments against committed ExFactory quantities for each SKU, ensuring alignment with commitment.",
-      calculation: "Weighted (actual ship quantity / plan quantity) by SKU",
-      bgColor: ""
+      topline: "Product Availability",
+      color: "blue",
+      icon: "📦",
+      metrics: [
+        { priority: "P0", name: "Ex-factory to Supply Commit Attainment %", target: "Per project matrix", calculation: "Weighted (actual ship qty / plan qty) by SKU", source: "CM APS + CM WMS", integration: "APS + ASN", dri: "CM", upload: "System Push / Manual", freq: "Weekly" },
+        { priority: "P0", name: "Production Schedule Adherence %", target: "Per project matrix", calculation: "Weighted (actual input qty / plan qty) by SKU", source: "CM APS + CM MES", integration: "APS + QuatumnBridge", dri: "CM", upload: "System Push / Manual", freq: "Weekly" },
+        { priority: "P0", name: "Capacity Utilization", target: "≥85%", calculation: "Actual output / Installed output capacity", source: "CM APS + CM MES", integration: "APS + QuatumnBridge", dri: "CM", upload: "System Push / Manual", freq: "Weekly" },
+        { priority: "P0", name: "Capacity Shortage %", target: "<5%", calculation: "(ExF Request - Ungated Capacity) / ExF Request", source: "CM APS", integration: "APS", dri: "CM", upload: "System Push / Manual", freq: "Weekly" }
+      ]
     },
     {
-      name: "Production Schedule Adherence %",
-      target: "92%-95%",
-      definition: "Measures the actual production input against the planned production schedule for each SKU, helping to identify potential bottlenecks and risks to impact supply performance.",
-      calculation: "Weighted (actual input quantity / plan quantity) by SKU",
-      bgColor: ""
+      topline: "Agility",
+      color: "green",
+      icon: "⚡",
+      metrics: [
+        { priority: "P1", name: "Manufacturing Lead Time", target: "Per project matrix", calculation: "Median (Ship date - Input date) for units shipped this week", source: "CM MES", integration: "QuatumnBridge", dri: "CM", upload: "System Push", freq: "Weekly" },
+        { priority: "P1", name: "Manufacturing Lead Time Achieve Rate", target: "Per project matrix", calculation: "Units within committed LT / total units produced", source: "CM MES", integration: "QuatumnBridge", dri: "CM", upload: "System Push", freq: "Weekly" }
+      ]
     },
     {
-      name: "Capacity Utilization",
-      target: "≥85%",
-      definition: "Measure if factory under or over utilize installed capacity, idle due to CTB shortage / technical line down or OT w/, extra cost will all impact this indicator",
-      calculation: "Actual output / Installed output capacity",
-      bgColor: ""
+      topline: "Timely Delivery",
+      color: "purple",
+      icon: "🚚",
+      metrics: [
+        { priority: "P0", name: "BTO/CTO Manufacturing Lead Time", target: "Per project matrix", calculation: "Median (Ship date - Input date) for POs shipped this week", source: "CM MES", integration: "QuatumnBridge", dri: "CM", upload: "System Push", freq: "Weekly" },
+        { priority: "P0", name: "BTO/CTO On-Time Ship %", target: "Per project matrix", calculation: "PO qty shipped within committed LT / total PO qty", source: "CM MES", integration: "QuatumnBridge", dri: "CM", upload: "System Push", freq: "Weekly" }
+      ]
     },
     {
-      name: "Manufacturing Lead Time Achieve Rate",
-      target: "≥90%",
-      definition: "Calculates the percentage of parts produced within the committed lead time, ensuring that production is meeting supply commitment and minimizing delays.",
-      calculation: "Units produced within committed lead time / total units produced",
-      bgColor: ""
+      topline: "Readiness",
+      color: "amber",
+      icon: "🏗️",
+      metrics: [
+        { priority: "P0", name: "Labor Fulfillment %", target: "100%", calculation: "Labor demand qty / actual onboarded labor qty", source: "CM Labor Tracker", integration: "csv → Mulesoft", dri: "CM", upload: "Manual", freq: "Weekly" },
+        { priority: "P0", name: "Campus Readiness On-Time %", target: "100%", calculation: "Ok2use campus space & facility / total campus demands", source: "Campus Database", integration: "csv → Mulesoft", dri: "MO", upload: "Manual", freq: "Monthly" },
+        { priority: "P1", name: "Campus Utilization %", target: ">80%", calculation: "Line installed space / total reserved space", source: "Campus Database", integration: "csv → Mulesoft", dri: "MO", upload: "Manual", freq: "Monthly" }
+      ]
     },
     {
-      name: "BTO On-Time Ship %",
-      target: "≥80%",
-      definition: "Measures the percentage of units shipped within the committed lead time, ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
-      calculation: "PO quantity shipped within committed lead time / total PO quantity",
-      bgColor: ""
-    },
-    {
-      name: "CTO On-Time Ship %",
-      target: "≥90%",
-      definition: "Measures the percentage of units shipped within the committed lead time, ensuring timely delivery to customers and maintaining a high level of customer satisfaction.",
-      calculation: "PO quantity shipped within committed lead time / total PO quantity",
-      bgColor: ""
-    },
-    {
-      name: "Labor Fulfillment %",
-      target: "100%",
-      definition: "Monitors the percentage of direct labor quantity to meet project requests, ensuring that the labor workforce is in place to support production demands and project timelines",
-      calculation: "labor demand quantity / actual onboarded labor quantity",
-      bgColor: ""
-    },
-    {
-      name: "Campus readiness on-time %",
-      target: "100%",
-      definition: "Evaluates the availability and readiness of campus facilities (e.g., workshops, meeting rooms) to support project requests",
-      calculation: "Ok2use campus space&facility / Total campus demands",
-      bgColor: ""
+      topline: "Cost",
+      color: "red",
+      icon: "💰",
+      metrics: [
+        { priority: "P1", name: "FV Negotiation Rate", target: ">20%", calculation: "Cost Reduction through Negotiation / total validated cost", source: "FV Database", integration: "csv → Mulesoft", dri: "MO", upload: "Manual", freq: "By need" },
+        { priority: "P1", name: "Factory Variance Cost per Unit", target: "Per project matrix", calculation: "Total FV cost (incurred + projected) / ExF", source: "FV Database", integration: "csv → Mulesoft", dri: "MO", upload: "Manual", freq: "Monthly" }
+      ]
     }
   ];
 
+  const colorMap = {
+    blue: { bg: 'bg-blue-50', border: 'border-blue-200', header: 'bg-blue-100 text-blue-900', badge: 'bg-blue-600' },
+    green: { bg: 'bg-green-50', border: 'border-green-200', header: 'bg-green-100 text-green-900', badge: 'bg-green-600' },
+    purple: { bg: 'bg-purple-50', border: 'border-purple-200', header: 'bg-purple-100 text-purple-900', badge: 'bg-purple-600' },
+    amber: { bg: 'bg-amber-50', border: 'border-amber-200', header: 'bg-amber-100 text-amber-900', badge: 'bg-amber-600' },
+    red: { bg: 'bg-red-50', border: 'border-red-200', header: 'bg-red-100 text-red-900', badge: 'bg-red-600' }
+  };
+
   content.innerHTML = `
-    <div class="space-y-4">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-slate-900">Aligned Index - Metrics Dictionary</h2>
-        <p class="text-sm text-slate-600">Reference: Program workspace metrics</p>
+    <div class="space-y-6">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">SCO KPI Framework</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Aligned metrics organized by SCO Topline categories</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">P0: Phase 1 Must</span>
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold">P1: Phase 1 Enhance</span>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b-2 border-slate-900">
-              <th class="text-left font-bold p-3 border-r border-slate-300">Metric Name</th>
-              <th class="text-left font-bold p-3 border-r border-slate-300">Target</th>
-              <th class="text-left font-bold p-3 border-r border-slate-300">Definition</th>
-              <th class="text-left font-bold p-3">Calculation</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${metrics.map(metric => `
-              <tr class="border-b border-slate-200 ${metric.bgColor}">
-                <td class="p-3 border-r border-slate-300 font-medium align-top">${metric.name}</td>
-                <td class="p-3 border-r border-slate-300 text-sm align-top">${metric.target}</td>
-                <td class="p-3 border-r border-slate-300 text-sm align-top">${metric.definition}</td>
-                <td class="p-3 text-sm align-top">${metric.calculation}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
+      ${kpiGroups.map(group => {
+        const c = colorMap[group.color];
+        return `
+        <div class="border ${c.border} rounded-xl overflow-hidden">
+          <div class="${c.header} px-4 py-2.5 flex items-center gap-2">
+            <span class="text-lg">${group.icon}</span>
+            <span class="font-bold text-sm">${group.topline}</span>
+            <span class="ml-auto text-xs opacity-70">${group.metrics.length} metrics</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+              <thead>
+                <tr class="bg-white/60">
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200 w-10">Pri</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Metric Name</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Target</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Calculation</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Data Source</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Integration</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">DRI</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Upload</th>
+                  <th class="text-left font-semibold p-2.5 border-b border-slate-200">Freq</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${group.metrics.map(m => `
+                  <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                    <td class="p-2.5 align-top"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${m.priority === 'P0' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}">${m.priority}</span></td>
+                    <td class="p-2.5 font-medium text-slate-800 align-top">${m.name}</td>
+                    <td class="p-2.5 text-slate-600 align-top whitespace-nowrap">${m.target}</td>
+                    <td class="p-2.5 text-slate-600 align-top">${m.calculation}</td>
+                    <td class="p-2.5 align-top"><span class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-medium">${m.source}</span></td>
+                    <td class="p-2.5 align-top"><span class="px-1.5 py-0.5 ${m.integration.includes('csv') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'} rounded text-[10px] font-medium">${m.integration}</span></td>
+                    <td class="p-2.5 align-top"><span class="px-1.5 py-0.5 ${m.dri === 'CM' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'} rounded text-[10px] font-bold">${m.dri}</span></td>
+                    <td class="p-2.5 align-top text-slate-500">${m.upload}</td>
+                    <td class="p-2.5 align-top text-slate-500 whitespace-nowrap">${m.freq}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('')}
 
-      <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <p class="text-sm text-slate-700">
-          <strong>Note:</strong> Highlighted metrics (orange/yellow) indicate areas requiring special attention or have unique calculation considerations.
-        </p>
+      <div class="grid grid-cols-3 gap-3 mt-4">
+        <div class="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+          <div class="text-lg font-bold text-green-700">Tier 1</div>
+          <div class="text-xs text-green-600 mt-1">System Push</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">CM APS / MES / WMS</div>
+        </div>
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+          <div class="text-lg font-bold text-amber-700">Tier 2</div>
+          <div class="text-xs text-amber-600 mt-1">csv → Mulesoft</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Labor / Campus / FV</div>
+        </div>
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-center">
+          <div class="text-lg font-bold text-slate-700">Tier 3</div>
+          <div class="text-xs text-slate-600 mt-1">Manual Upload</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Excel → FDOS</div>
+        </div>
       </div>
     </div>
   `;
@@ -11165,76 +13293,182 @@ function renderAlignedIndex() {
 function renderDataSource() {
   const content = $("dataFoundationContent");
 
-  const dataSources = [
+  const systems = [
     {
-      category: "Ex-f: Plan/Actual",
-      source: "Contract Manufacturer",
-      currentMethod: "Email + Excel File",
-      advancedMethod: "WMS/ERP API",
-      destination: "Internal Team",
-      team: "Planning",
-      bgColor: "bg-purple-50"
+      id: "S1", name: "CM APS", desc: "Production planning & scheduling",
+      path: "CM APS → APS integration → FDOS", tier: 1, tierLabel: "System Push",
+      kpis: ["Commit Attainment", "Schedule Adherence", "Capacity Utilization", "Capacity Shortage"],
+      dri: "CM", freq: "Weekly", status: "ready"
     },
     {
-      category: "CTB File",
-      source: "Contract Manufacturer",
-      currentMethod: "Email + Excel File",
-      advancedMethod: "ERP/MRP API",
-      destination: "Internal Team",
-      team: "MPM",
-      bgColor: "bg-purple-50"
+      id: "S2", name: "CM MES", desc: "Manufacturing execution & tracking",
+      path: "CM MES → QuatumnBridge → FDOS", tier: 1, tierLabel: "System Push",
+      kpis: ["Mfg Lead Time", "LT Achieve Rate", "BTO/CTO LT", "On-Time Ship"],
+      dri: "CM", freq: "Daily", status: "ready"
     },
     {
-      category: "Production Plan",
-      source: "Contract Manufacturer",
-      currentMethod: "Email + Excel File",
-      advancedMethod: "MES API",
-      destination: "Internal Team",
-      team: "MO",
-      bgColor: "bg-yellow-50"
+      id: "S3", name: "CM WMS", desc: "Warehouse & shipment management",
+      path: "CM WMS → ASN → FDOS", tier: 1, tierLabel: "System Push",
+      kpis: ["Ex-factory Shipment Actual"],
+      dri: "CM", freq: "Daily", status: "ready"
+    },
+    {
+      id: "S4", name: "CM Labor Tracker", desc: "Workforce management",
+      path: "csv → Mulesoft → FDOS", tier: 2, tierLabel: "Manual csv",
+      kpis: ["Labor Fulfillment"],
+      dri: "CM", freq: "Weekly", status: "manual"
+    },
+    {
+      id: "S5", name: "Campus Database", desc: "Facility & space management",
+      path: "csv → Mulesoft → FDOS", tier: 2, tierLabel: "Manual csv",
+      kpis: ["Campus Readiness", "Campus Utilization"],
+      dri: "MO", freq: "Monthly", status: "manual"
+    },
+    {
+      id: "S6", name: "FV Database", desc: "Factory variance cost tracking",
+      path: "csv → Mulesoft → FDOS", tier: 2, tierLabel: "Manual csv",
+      kpis: ["FV Negotiation Rate", "FV Cost per Unit"],
+      dri: "MO", freq: "Weekly-Monthly", status: "manual"
     }
   ];
 
+  const tierColors = {
+    1: { bg: 'bg-green-50', border: 'border-green-200', badge: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+    2: { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }
+  };
+
   content.innerHTML = `
-    <div class="space-y-4">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-slate-900">Data Source Mapping</h2>
-        <p class="text-sm text-slate-600">Integration flow between Contract Manufacturer and Internal Teams</p>
+    <div class="space-y-6">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Data Source & Integration Map</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Real integration paths from CM systems to FDOS</p>
+        </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse border border-slate-300">
-          <thead>
-            <tr class="bg-slate-100">
-              <th class="text-left font-bold p-3 border border-slate-300">Data Category</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Source</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Current Method<br/>(Manual)</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Advanced Method<br/>(Future)</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Destination</th>
-              <th class="text-left font-bold p-3 border border-slate-300">Internal Team</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${dataSources.map(ds => `
-              <tr class="${ds.bgColor} border border-slate-300">
-                <td class="p-3 font-medium border border-slate-300">${ds.category}</td>
-                <td class="p-3 border border-slate-300">${ds.source}</td>
-                <td class="p-3 border border-slate-300">${ds.currentMethod}</td>
-                <td class="p-3 border border-slate-300">${ds.advancedMethod}</td>
-                <td class="p-3 border border-slate-300">${ds.destination}</td>
-                <td class="p-3 font-semibold border border-slate-300">${ds.team}</td>
+      <!-- Integration Pipeline Diagram -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <div class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Data Pipeline Architecture</div>
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex-1 text-center">
+            <div class="bg-purple-100 border border-purple-300 rounded-lg p-3 mx-2">
+              <div class="font-bold text-purple-800">CM Systems</div>
+              <div class="text-purple-600 mt-1">APS / MES / WMS<br/>Labor / Campus / FV</div>
+            </div>
+          </div>
+          <div class="text-slate-400 text-lg">→</div>
+          <div class="flex-1 text-center">
+            <div class="bg-blue-100 border border-blue-300 rounded-lg p-3 mx-2">
+              <div class="font-bold text-blue-800">Integration Layer</div>
+              <div class="text-blue-600 mt-1">APS / QuatumnBridge<br/>ASN / Mulesoft</div>
+            </div>
+          </div>
+          <div class="text-slate-400 text-lg">→</div>
+          <div class="flex-1 text-center">
+            <div class="bg-green-100 border border-green-300 rounded-lg p-3 mx-2">
+              <div class="font-bold text-green-800">FDOS</div>
+              <div class="text-green-600 mt-1">Validation → Calculation<br/>→ Dashboard / Alert</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Cards -->
+      <div class="space-y-3">
+        ${systems.map(sys => {
+          const tc = tierColors[sys.tier];
+          return `
+          <div class="border ${tc.border} rounded-xl overflow-hidden">
+            <div class="${tc.bg} px-4 py-3 flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg ${tc.badge} flex items-center justify-center text-xs font-bold">${sys.id}</span>
+              <div class="flex-1">
+                <div class="font-bold text-sm text-slate-800">${sys.name}</div>
+                <div class="text-xs text-slate-500">${sys.desc}</div>
+              </div>
+              <span class="px-2 py-1 ${tc.badge} rounded-full text-[10px] font-bold">Tier ${sys.tier} · ${sys.tierLabel}</span>
+              <span class="px-2 py-1 ${sys.dri === 'CM' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'} rounded-full text-[10px] font-bold">DRI: ${sys.dri}</span>
+            </div>
+            <div class="px-4 py-3 bg-white/80">
+              <div class="flex items-center gap-6 text-xs">
+                <div>
+                  <span class="text-slate-400">Path:</span>
+                  <span class="ml-1 font-mono text-slate-700">${sys.path}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400">Freq:</span>
+                  <span class="ml-1 font-semibold text-slate-700">${sys.freq}</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                ${sys.kpis.map(k => `<span class="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px] text-slate-600">${k}</span>`).join('')}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- KPI Input Parameter Detail Table -->
+      <div class="border border-slate-200 rounded-xl overflow-hidden">
+        <div class="bg-slate-100 px-4 py-2.5 font-bold text-sm text-slate-700">KPI Input Parameters Detail</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50">
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">KPI</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">Input Parameter</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">Source System</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">Integration</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">DRI</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">Upload Mode</th>
+                <th class="text-left font-semibold p-2.5 border-b border-slate-200">Refresh</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${[
+                { kpi: 'Commit Attainment %', param: 'Actual Ship Qty', src: 'CM WMS', intg: 'ASN', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: '', param: 'Plan Qty (by SKU)', src: 'CM APS', intg: 'APS', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: 'Schedule Adherence %', param: 'Actual Input Qty', src: 'CM MES', intg: 'QuatumnBridge', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: '', param: 'Plan Input Qty', src: 'CM APS', intg: 'APS', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: 'Capacity Utilization', param: 'Actual Output', src: 'CM MES', intg: 'QuatumnBridge', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: '', param: 'Installed Capacity', src: 'CM APS', intg: 'APS', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: 'Capacity Shortage %', param: 'ExF Request', src: 'CM APS', intg: 'APS', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: '', param: 'Ungated Capacity', src: 'CM APS', intg: 'APS', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: 'Mfg Lead Time', param: 'Ship Date/Time', src: 'CM MES', intg: 'QuatumnBridge', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: '', param: 'Input Date/Time', src: 'CM MES', intg: 'QuatumnBridge', dri: 'CM', mode: 'System Push', freq: 'Weekly' },
+                { kpi: 'Labor Fulfillment %', param: 'Labor Demand Qty', src: 'CM Labor Tracker', intg: 'csv → Mulesoft', dri: 'CM', mode: 'Manual', freq: 'Weekly' },
+                { kpi: '', param: 'Onboarded Labor Qty', src: 'CM Labor Tracker', intg: 'csv → Mulesoft', dri: 'CM', mode: 'Manual', freq: 'Weekly' },
+                { kpi: 'Campus Readiness %', param: 'Campus Space Demand', src: 'Campus Database', intg: 'csv → Mulesoft', dri: 'MO', mode: 'Manual', freq: 'Monthly' },
+                { kpi: '', param: 'Campus Space Available', src: 'Campus Database', intg: 'csv → Mulesoft', dri: 'MO', mode: 'Manual', freq: 'Monthly' },
+                { kpi: 'FV Cost per Unit', param: 'Incurred FV Cost', src: 'FV Database', intg: 'csv → Mulesoft', dri: 'MO', mode: 'Manual', freq: 'Weekly' },
+                { kpi: '', param: 'Projected FV Cost', src: 'FV Database', intg: 'csv → Mulesoft', dri: 'MO', mode: 'Manual', freq: 'Weekly' }
+              ].map(row => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                  <td class="p-2.5 font-medium text-slate-800 align-top">${row.kpi}</td>
+                  <td class="p-2.5 text-slate-600">${row.param}</td>
+                  <td class="p-2.5"><span class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px]">${row.src}</span></td>
+                  <td class="p-2.5"><span class="px-1.5 py-0.5 ${row.intg.includes('csv') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'} rounded text-[10px]">${row.intg}</span></td>
+                  <td class="p-2.5"><span class="px-1.5 py-0.5 ${row.dri === 'CM' ? 'bg-purple-100 text-purple-700' : 'bg-sky-100 text-sky-700'} rounded text-[10px] font-bold">${row.dri}</span></td>
+                  <td class="p-2.5 text-slate-500">${row.mode}</td>
+                  <td class="p-2.5 text-slate-500">${row.freq}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-        <h3 class="font-semibold text-amber-900 mb-2">⚠️ Integration Status</h3>
-        <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
-          <li><strong>Current State:</strong> All data sources use Email + Excel File (Manual process)</li>
-          <li><strong>Future State:</strong> API-based integration for automated data flow (WMS/ERP, ERP/MRP, MES)</li>
-        </ul>
+      <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h3 class="font-semibold text-blue-900 mb-2 text-sm">Integration Readiness Summary</h3>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <span><strong>Tier 1 (System Push):</strong> CM APS, CM MES, CM WMS — existing integrations, need FDOS connector</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span><strong>Tier 2 (Manual csv):</strong> Labor Tracker, Campus DB, FV DB — csv upload via Mulesoft</span>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -12554,217 +14788,1292 @@ function convertMarkdownToHTML(markdown) {
 function renderNotification() {
   const content = $("content");
 
-  // Get current date info
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
-  const currentDate = today.getDate();
-  
-  // Month names
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-  
-  // Get first day of month and number of days
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay = new Date(currentYear, currentMonth + 1, 0);
-  const daysInMonth = lastDay.getDate();
-  const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
-
-  // Calendar events for demo
-  const calendarEvents = {
-    5: [{ title: 'China AI Day', time: '10:00AM - 4:00PM', color: 'bg-blue-500' }],
-    13: [{ title: 'FZ Review', time: '10:00 AM', color: 'bg-green-600' }],
-    17: [{ title: 'NPI Review', time: '3:00 PM', color: 'bg-orange-500' }],
-    19: [{ title: "Echo's All Hands", time: '', color: 'bg-purple-500' }],
-    31: [{ title: 'NPI Review', time: '3:00 PM', color: 'bg-orange-500' }]
-  };
-
-  // Generate calendar grid
-  let calendarHTML = '';
-  let dayCounter = 1;
-
-  // Calculate total rows needed (up to 6 weeks)
-  const totalSlots = Math.ceil((daysInMonth + startDayOfWeek) / 7) * 7;
-
-  for (let i = 0; i < totalSlots; i++) {
-    if (i % 7 === 0) {
-      calendarHTML += '<div class="grid grid-cols-7 calendar-row">';
-    }
-
-    // Empty cells before month starts
-    if (i < startDayOfWeek) {
-      calendarHTML += '<div class="bg-slate-200 min-h-[100px] p-2 border-r border-slate-300"></div>';
-    }
-    // Days of current month
-    else if (dayCounter <= daysInMonth) {
-      const isToday = dayCounter === currentDate;
-      const isSunday = i % 7 === 0;
-      const dayClass = isSunday ? 'bg-slate-200' : 'bg-white';
-      const borderClass = (i % 7 === 6) ? '' : 'border-r border-slate-300';
-      const todayBadge = isToday ? 'inline-flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full' : '';
-
-      const dayEvents = calendarEvents[dayCounter] || [];
-      const eventsHTML = dayEvents.map(ev => `
-        <div class="${ev.color} text-white rounded px-1.5 py-0.5 truncate text-[10px] leading-tight font-medium" title="${ev.title}${ev.time ? ' ' + ev.time : ''}">
-          ${ev.time ? '<span class="opacity-80">' + ev.time + '</span> ' : ''}${ev.title}
-        </div>
-      `).join('');
-
-      calendarHTML += `
-        <div class="${dayClass} min-h-[100px] p-2 hover:bg-blue-50 transition-colors ${borderClass}">
-          <div class="font-medium mb-1 ${isToday ? todayBadge : 'text-slate-700'}">${dayCounter}</div>
-          <div class="space-y-1 text-xs">
-            ${eventsHTML}
-          </div>
-        </div>
-      `;
-      dayCounter++;
-    }
-    // Empty cells after month ends
-    else {
-      const borderClass = (i % 7 === 6) ? '' : 'border-r border-slate-300';
-      calendarHTML += `<div class="bg-slate-200 min-h-[100px] p-2 ${borderClass}"></div>`;
-    }
-
-    if (i % 7 === 6) {
-      calendarHTML += '</div>';
-    }
-  }
-
-  // Sample to-do items (will be dynamic in future)
-  const sampleTodos = [
-    { id: 1, title: 'Review Q1 Production Plan', priority: 'high', dueDate: '2026-02-09', assignee: null, status: 'pending' },
-    { id: 2, title: 'Update Capacity Configuration', priority: 'medium', dueDate: '2026-02-10', assignee: null, status: 'pending' },
-    { id: 3, title: 'Finalize Shipment Schedule', priority: 'high', dueDate: '2026-02-11', assignee: null, status: 'in-progress' },
-    { id: 4, title: 'Team Sync Meeting Prep', priority: 'low', dueDate: '2026-02-12', assignee: null, status: 'pending' },
-    { id: 5, title: 'Review AI Opportunities Report', priority: 'medium', dueDate: '2026-02-13', assignee: null, status: 'pending' }
-  ];
-
   content.innerHTML = `
-    <style>
-      .priority-high { border-left: 4px solid #ef4444; }
-      .priority-medium { border-left: 4px solid #f59e0b; }
-      .priority-low { border-left: 4px solid #10b981; }
-      .status-pending { background: linear-gradient(to right, #fef3c7, white); }
-      .status-in-progress { background: linear-gradient(to right, #dbeafe, white); }
-      .status-completed { background: linear-gradient(to right, #d1fae5, white); opacity: 0.6; }
-      .calendar-row { border-bottom: 1px solid #cbd5e1; }
-    </style>
-
     <div class="space-y-6">
       <!-- Header -->
-      <div class="bg-gradient-to-r from-blue-100 via-indigo-100 to-cyan-100 rounded-xl shadow-md border border-blue-200 p-6">
-        <h1 class="text-3xl font-bold mb-2 text-slate-800">🔔 Team Notifications & Calendar</h1>
-        <p class="text-slate-600">Stay organized with team events and to-do items</p>
+      <div class="bg-white border-2 border-slate-300 rounded-xl p-6">
+        <h1 class="text-2xl font-bold text-slate-900 mb-1">Execution Inbox</h1>
+        <p class="text-sm text-slate-600">Operational signals across the factory network that may affect delivery commitments, production stability, or execution coordination.</p>
       </div>
 
-      <!-- This Week's To-Do Section -->
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-300">
-        <div class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 border-b border-purple-200">
-          <h2 class="text-2xl font-bold text-slate-800">📋 This Week's To-Do List</h2>
-          <p class="text-slate-600 text-sm mt-1">Week of ${monthNames[currentMonth]} ${currentDate}, ${currentYear}</p>
+      <!-- ============================================================ -->
+      <!-- Section 1: Execution Alerts -->
+      <!-- ============================================================ -->
+      <div id="execution-alerts-section" class="bg-white border-2 border-red-200 rounded-xl overflow-hidden">
+        <div class="bg-red-50 px-6 py-4 border-b border-red-200">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <h2 class="text-lg font-bold text-red-900">Execution Alerts</h2>
+            <span class="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-bold rounded-full">3 Active</span>
+            <button onclick="generateAlertBrief()" id="generate-alert-brief-btn" class="ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-xs font-medium hover:from-indigo-700 hover:to-purple-700 flex items-center gap-1.5 shadow-sm" style="cursor:pointer;">
+              <span>🤖</span> Generate Alert Brief
+            </button>
+          </div>
+          <p class="text-xs text-red-700 mt-1">Each alert shows not only the detected risk, but also the system response chain that turns execution signals into decision-ready actions.</p>
         </div>
 
-        <div class="p-6">
-          <div class="space-y-3">
-            ${sampleTodos.map(todo => `
-              <div class="priority-${todo.priority} status-${todo.status} rounded-lg p-4 border border-slate-200 hover:shadow-md transition-shadow">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <input type="checkbox" ${todo.status === 'completed' ? 'checked' : ''} 
-                             class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                      <h3 class="font-semibold text-slate-800 ${todo.status === 'completed' ? 'line-through' : ''}">${todo.title}</h3>
+        <div class="p-5 space-y-4">
+
+          <!-- ====== Alert 1: Production Output Risk ====== -->
+          <div class="border-l-4 border-red-500 bg-red-50 rounded-r-lg overflow-hidden">
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>
+                    <span class="text-sm font-bold text-slate-900">Production Output Risk</span>
+                    <span class="text-xs text-slate-500">• Hypernova</span>
+                  </div>
+                  <div class="text-sm text-slate-700 mb-3">Assembly line output below plan — 12,400 units at risk for W04 shipment commit</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Primary Cause</div>
+                      <div class="font-medium text-slate-800">Yield drop on final assembly</div>
                     </div>
-                    <div class="flex items-center gap-4 text-sm text-slate-600 ml-8">
-                      <div class="flex items-center gap-1">
-                        <span>📅</span>
-                        <span>Due: ${todo.dueDate}</span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <span>🏷️</span>
-                        <span class="capitalize">${todo.priority} Priority</span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <span>👤</span>
-                        <span class="text-slate-400 italic">${todo.assignee || 'Unassigned'}</span>
-                      </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Confidence</div>
+                      <div class="font-medium text-red-700">HIGH</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Time Window</div>
+                      <div class="font-medium text-slate-800">24 hours</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Owner</div>
+                      <div class="font-medium text-slate-800">Factory Operations</div>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 text-xs font-medium rounded-full ${
-                      todo.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      todo.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }">
-                      ${todo.status === 'completed' ? '✓ Completed' :
-                        todo.status === 'in-progress' ? '⚡ In Progress' :
-                        '⏳ Pending'}
-                    </span>
-                    <button class="text-slate-400 hover:text-slate-600 p-1">⋮</button>
+                  <!-- Impact Assessment Chain -->
+                  <div class="mt-3 bg-white/80 border border-red-100 rounded-lg p-3">
+                    <div class="flex items-center gap-1.5 mb-2.5">
+                      <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                      <span class="text-xs font-bold text-slate-700">Impact Assessment Chain</span>
+                    </div>
+                    <div class="flex items-stretch gap-0 text-xs">
+                      <div class="flex-1 bg-blue-50 border border-blue-200 rounded-l-lg p-2.5 text-center relative">
+                        <div class="text-blue-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Input</div>
+                        <div class="text-sm font-bold text-blue-800">-</div>
+                        <div class="text-blue-500 text-[10px] mt-0.5">No input constraint</div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-red-50 border border-red-200 p-2.5 text-center relative">
+                        <div class="text-red-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Output</div>
+                        <div class="text-sm font-bold text-red-700">-462/day</div>
+                        <div class="text-red-500 text-[10px] mt-0.5">Yield 90%→70%</div>
+                        <div class="w-full bg-red-200 rounded-full h-1 mt-1.5"><div class="bg-red-500 h-1 rounded-full" style="width:78%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-amber-50 border border-amber-200 p-2.5 text-center relative">
+                        <div class="text-amber-500 font-semibold uppercase text-[10px] tracking-wider mb-1">Shipment</div>
+                        <div class="text-sm font-bold text-amber-700">-3,234</div>
+                        <div class="text-amber-500 text-[10px] mt-0.5">W04 window at risk</div>
+                        <div class="w-full bg-amber-200 rounded-full h-1 mt-1.5"><div class="bg-amber-500 h-1 rounded-full" style="width:62%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-red-50 border border-red-300 rounded-r-lg p-2.5 text-center ring-1 ring-red-300">
+                        <div class="text-red-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Commitment</div>
+                        <div class="text-sm font-bold text-red-700">-15.5%</div>
+                        <div class="text-red-500 text-[10px] mt-0.5">12,400 units gap</div>
+                        <div class="w-full bg-red-200 rounded-full h-1 mt-1.5"><div class="bg-red-600 h-1 rounded-full" style="width:85%"></div></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            `).join('')}
+              <div class="flex gap-2 mt-3 pt-3 border-t border-red-200 flex-wrap">
+                <button onclick="navigateTo('production-plan');" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">View Production Dashboard</button>
+                <button onclick="navigateTo('production-plan');" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Open Production Plan</button>
+                <button onclick="toggleQuickNotify('notify-1')" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">@ Quick Notify</button>
+                <button onclick="toggleExecutionChain('chain-1')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 ml-auto">Show Execution Chain</button>
+              </div>
+
+              <!-- Quick Notify Panel -->
+              <div id="notify-1" class="hidden mt-3 bg-white border border-emerald-200 rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-xs font-bold text-emerald-800">Quick Notify</span>
+                  <span class="text-xs text-slate-500">• Production Output Risk • Hypernova</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span class="text-xs text-slate-500">To:</span>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Wei Chen (Factory Ops)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@David Liu (Planning)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Sarah Wang (MPM)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@James Li (Engineering)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Amy Zhang (Delivery)</button>
+                </div>
+                <textarea class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent" rows="2" placeholder="Add a message... (e.g. Please review yield drop impact on W04 commit)"></textarea>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600" checked> Include alert context</label>
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600"> Include execution chain</label>
+                  </div>
+                  <div class="flex gap-2">
+                    <button onclick="toggleQuickNotify('notify-1')" class="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200">Cancel</button>
+                    <button onclick="sendQuickNotify('notify-1')" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">Send Notification</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Execution Chain (expandable) -->
+            <div id="chain-1" class="hidden border-t-2 border-red-200 bg-white">
+              <div class="px-5 py-4">
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded">FDOS Execution Chain</span>
+                  <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-bold rounded">Scenario Pack Prepared</span>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Step 1 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                      <div class="w-0.5 flex-1 bg-blue-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Signal Detected</div>
+                      <div class="text-xs text-slate-600 mb-2">System detected that actual assembly line output has fallen below the current production plan.</div>
+                      <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1 text-xs text-slate-700">
+                        <div>• Final assembly yield dropped from 86% to 70%</div>
+                        <div>• Rework queue increased</div>
+                        <div>• Line downtime increased by 2 hours</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 2 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                      <div class="w-0.5 flex-1 bg-amber-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">System Analysis</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS analyzed the constraint and projected delivery impact.</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Primary Constraint</div>
+                          <div class="text-xs font-medium text-slate-800">Yield degradation on final assembly</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Impact Projection</div>
+                          <div class="text-xs font-medium text-slate-800">12,400 units at risk</div>
+                          <div class="text-xs text-slate-600">~1.5 day shipment delay risk</div>
+                          <div class="text-xs text-slate-600">3 customer commits affected</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Confidence</div>
+                          <div class="text-xs font-bold text-red-700">HIGH</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 3 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                      <div class="w-0.5 flex-1 bg-purple-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Decision Triggered</div>
+                      <div class="text-xs text-slate-600 mb-2">Impact exceeded the weekly commit protection threshold.</div>
+                      <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-2 py-0.5 bg-purple-600 text-white text-xs font-bold rounded">Decision Threshold Exceeded</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-xs mt-2">
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Candidate</div>
+                            <div class="font-medium text-slate-800">Protect W04 shipment commit</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Owner</div>
+                            <div class="font-medium text-slate-800">Factory Operations</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Window</div>
+                            <div class="font-medium text-slate-800">24 hours</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 4 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</div>
+                    </div>
+                    <div class="flex-1">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Recommended Next Step</div>
+                      <div class="text-xs text-slate-600 mb-2">Scenario analysis is ready for review in Decision Center.</div>
+                      <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                        <div class="text-xs font-semibold text-slate-700 mb-2">Available Scenarios</div>
+                        <div class="space-y-1 text-xs text-slate-700">
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Shift capacity from Line 3 → recover ~3,200 units</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Run partial build → recover ~5,000 units</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Delay low-priority SKU → recover ~7,000 units</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 flex-wrap">
+                        <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700">Open in Decision Center</button>
+                        <button onclick="navigateTo('production-plan');" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Open Scenario Analysis</button>
+                        <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Route to Factory Ops</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Add new to-do button -->
-          <button class="mt-6 w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-600 transition-colors font-medium">
-            + Add New To-Do Item
-          </button>
+          <!-- ====== Alert 2: Material Readiness Risk ====== -->
+          <div class="border-l-4 border-orange-500 bg-orange-50 rounded-r-lg overflow-hidden">
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded">MEDIUM</span>
+                    <span class="text-sm font-bold text-slate-900">Material Readiness Risk</span>
+                    <span class="text-xs text-slate-500">• SmartGlass V2</span>
+                  </div>
+                  <div class="text-sm text-slate-700 mb-3">CTB shortage detected — potential delay to production input tomorrow</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Material</div>
+                      <div class="font-medium text-slate-800">Optical module IC-77</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Confidence</div>
+                      <div class="font-medium text-orange-700">MEDIUM</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Time Window</div>
+                      <div class="font-medium text-slate-800">36 hours</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Owner</div>
+                      <div class="font-medium text-slate-800">MPM</div>
+                    </div>
+                  </div>
+                  <!-- Impact Assessment Chain -->
+                  <div class="mt-3 bg-white/80 border border-orange-100 rounded-lg p-3">
+                    <div class="flex items-center gap-1.5 mb-2.5">
+                      <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                      <span class="text-xs font-bold text-slate-700">Impact Assessment Chain</span>
+                    </div>
+                    <div class="flex items-stretch gap-0 text-xs">
+                      <div class="flex-1 bg-orange-50 border border-orange-200 rounded-l-lg p-2.5 text-center relative ring-1 ring-orange-300">
+                        <div class="text-orange-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Input</div>
+                        <div class="text-sm font-bold text-orange-700">-2,800</div>
+                        <div class="text-orange-500 text-[10px] mt-0.5">IC-77 ETA +2d</div>
+                        <div class="w-full bg-orange-200 rounded-full h-1 mt-1.5"><div class="bg-orange-500 h-1 rounded-full" style="width:55%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-amber-50 border border-amber-200 p-2.5 text-center relative">
+                        <div class="text-amber-500 font-semibold uppercase text-[10px] tracking-wider mb-1">Output</div>
+                        <div class="text-sm font-bold text-amber-700">-2,520</div>
+                        <div class="text-amber-500 text-[10px] mt-0.5">@90% yield</div>
+                        <div class="w-full bg-amber-200 rounded-full h-1 mt-1.5"><div class="bg-amber-500 h-1 rounded-full" style="width:48%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-amber-50 border border-amber-200 p-2.5 text-center relative">
+                        <div class="text-amber-500 font-semibold uppercase text-[10px] tracking-wider mb-1">Shipment</div>
+                        <div class="text-sm font-bold text-amber-700">-2,520</div>
+                        <div class="text-amber-500 text-[10px] mt-0.5">+2d ship delay</div>
+                        <div class="w-full bg-amber-200 rounded-full h-1 mt-1.5"><div class="bg-amber-500 h-1 rounded-full" style="width:42%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-amber-50 border border-amber-200 rounded-r-lg p-2.5 text-center">
+                        <div class="text-amber-500 font-semibold uppercase text-[10px] tracking-wider mb-1">Commitment</div>
+                        <div class="text-sm font-bold text-amber-700">-5.2%</div>
+                        <div class="text-amber-500 text-[10px] mt-0.5">W05 at risk</div>
+                        <div class="w-full bg-amber-200 rounded-full h-1 mt-1.5"><div class="bg-amber-500 h-1 rounded-full" style="width:35%"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-3 pt-3 border-t border-orange-200 flex-wrap">
+                <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Check CTB Status</button>
+                <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Review Supplier ETA</button>
+                <button onclick="toggleQuickNotify('notify-2')" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">@ Quick Notify</button>
+                <button onclick="toggleExecutionChain('chain-2')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 ml-auto">Show Execution Chain</button>
+              </div>
+
+              <!-- Quick Notify Panel -->
+              <div id="notify-2" class="hidden mt-3 bg-white border border-emerald-200 rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-xs font-bold text-emerald-800">Quick Notify</span>
+                  <span class="text-xs text-slate-500">• Material Readiness Risk • SmartGlass V2</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span class="text-xs text-slate-500">To:</span>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Sarah Wang (MPM)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Kevin Zhao (Sourcing)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@David Liu (Planning)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Wei Chen (Factory Ops)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Amy Zhang (Delivery)</button>
+                </div>
+                <textarea class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent" rows="2" placeholder="Add a message... (e.g. CTB shortage on IC-77 — need supplier ETA update)"></textarea>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600" checked> Include alert context</label>
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600"> Include execution chain</label>
+                  </div>
+                  <div class="flex gap-2">
+                    <button onclick="toggleQuickNotify('notify-2')" class="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200">Cancel</button>
+                    <button onclick="sendQuickNotify('notify-2')" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">Send Notification</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Execution Chain (expandable) -->
+            <div id="chain-2" class="hidden border-t-2 border-orange-200 bg-white">
+              <div class="px-5 py-4">
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded">FDOS Execution Chain</span>
+                  <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-bold rounded">FDOS Analysis Ready</span>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Step 1 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                      <div class="w-0.5 flex-1 bg-blue-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Signal Detected</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS detected a shortage risk in CTB for optical module IC-77.</div>
+                      <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1 text-xs text-slate-700">
+                        <div>• Supplier ETA slipped by 2 days</div>
+                        <div>• CTB below required threshold for next build cycle</div>
+                        <div>• Line 2 and Line 4 may be affected</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 2 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                      <div class="w-0.5 flex-1 bg-amber-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">System Analysis</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS evaluated the supply constraint and production exposure.</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Primary Constraint</div>
+                          <div class="text-xs font-medium text-slate-800">Material readiness gap for IC-77</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Impact Projection</div>
+                          <div class="text-xs font-medium text-slate-800">8,000 units exposed</div>
+                          <div class="text-xs text-slate-600">2 lines potentially impacted</div>
+                          <div class="text-xs text-slate-600">Risk window begins within 36h</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Confidence</div>
+                          <div class="text-xs font-bold text-orange-700">MEDIUM</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 3 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                      <div class="w-0.5 flex-1 bg-purple-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Decision Triggered</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS generated a sourcing / material decision candidate due to production impact risk.</div>
+                      <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-2 py-0.5 bg-purple-600 text-white text-xs font-bold rounded">Decision Threshold Exceeded</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-xs mt-2">
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Candidate</div>
+                            <div class="font-medium text-slate-800">Use alternate supplier or delay production input</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Owner</div>
+                            <div class="font-medium text-slate-800">MPM / Sourcing</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Window</div>
+                            <div class="font-medium text-slate-800">36 hours</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 4 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</div>
+                    </div>
+                    <div class="flex-1">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Recommended Next Step</div>
+                      <div class="text-xs text-slate-600 mb-2">Sourcing and CTB mitigation options are ready for review.</div>
+                      <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                        <div class="text-xs font-semibold text-slate-700 mb-2">Available Options</div>
+                        <div class="space-y-1 text-xs text-slate-700">
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Activate alternate supplier → +2% FV cost impact</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Reallocate CTB from Product B</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Delay production input and re-sequence build plan</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 flex-wrap">
+                        <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700">Open in Decision Center</button>
+                        <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Open CTB Analysis</button>
+                        <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Route to MPM / Sourcing</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====== Alert 3: Shipment Delay Risk ====== -->
+          <div class="border-l-4 border-red-500 bg-red-50 rounded-r-lg overflow-hidden">
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded">HIGH</span>
+                    <span class="text-sm font-bold text-slate-900">Shipment Delay Risk</span>
+                    <span class="text-xs text-slate-500">• Product C</span>
+                  </div>
+                  <div class="text-sm text-slate-700 mb-3">Logistics ETA slip detected — shipment commit at risk for APAC region</div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Cause</div>
+                      <div class="font-medium text-slate-800">IC-77 shipment delayed by 2 days</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Confidence</div>
+                      <div class="font-medium text-red-700">HIGH</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Time Window</div>
+                      <div class="font-medium text-slate-800">48 hours</div>
+                    </div>
+                    <div>
+                      <div class="text-slate-500 mb-0.5">Owner</div>
+                      <div class="font-medium text-slate-800">China Delivery Team</div>
+                    </div>
+                  </div>
+                  <!-- Impact Assessment Chain -->
+                  <div class="mt-3 bg-white/80 border border-red-100 rounded-lg p-3">
+                    <div class="flex items-center gap-1.5 mb-2.5">
+                      <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                      <span class="text-xs font-bold text-slate-700">Impact Assessment Chain</span>
+                    </div>
+                    <div class="flex items-stretch gap-0 text-xs">
+                      <div class="flex-1 bg-slate-50 border border-slate-200 rounded-l-lg p-2.5 text-center relative">
+                        <div class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Input</div>
+                        <div class="text-sm font-bold text-slate-400">-</div>
+                        <div class="text-slate-400 text-[10px] mt-0.5">No impact</div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-slate-50 border border-slate-200 p-2.5 text-center relative">
+                        <div class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Output</div>
+                        <div class="text-sm font-bold text-slate-400">-</div>
+                        <div class="text-slate-400 text-[10px] mt-0.5">No impact</div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-red-50 border border-red-200 p-2.5 text-center relative ring-1 ring-red-300">
+                        <div class="text-red-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Shipment</div>
+                        <div class="text-sm font-bold text-red-700">-8,200</div>
+                        <div class="text-red-500 text-[10px] mt-0.5">+2d logistics delay</div>
+                        <div class="w-full bg-red-200 rounded-full h-1 mt-1.5"><div class="bg-red-500 h-1 rounded-full" style="width:72%"></div></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 text-slate-300 text-lg font-bold">&rarr;</div>
+                      </div>
+                      <div class="flex-1 bg-red-50 border border-red-300 rounded-r-lg p-2.5 text-center ring-1 ring-red-300">
+                        <div class="text-red-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Commitment</div>
+                        <div class="text-sm font-bold text-red-700">-10.3%</div>
+                        <div class="text-red-500 text-[10px] mt-0.5">APAC commit miss</div>
+                        <div class="w-full bg-red-200 rounded-full h-1 mt-1.5"><div class="bg-red-600 h-1 rounded-full" style="width:68%"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-3 pt-3 border-t border-red-200 flex-wrap">
+                <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">View Shipment Details</button>
+                <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Check Recovery Options</button>
+                <button onclick="toggleQuickNotify('notify-3')" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">@ Quick Notify</button>
+                <button onclick="toggleExecutionChain('chain-3')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 ml-auto">Show Execution Chain</button>
+              </div>
+
+              <!-- Quick Notify Panel -->
+              <div id="notify-3" class="hidden mt-3 bg-white border border-emerald-200 rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-xs font-bold text-emerald-800">Quick Notify</span>
+                  <span class="text-xs text-slate-500">• Shipment Delay Risk • Product C</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <span class="text-xs text-slate-500">To:</span>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Amy Zhang (Delivery)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@David Liu (Planning)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Sarah Wang (MPM)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Kevin Zhao (Sourcing)</button>
+                  <button onclick="toggleMention(this)" class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-colors">@Wei Chen (Factory Ops)</button>
+                </div>
+                <textarea class="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent" rows="2" placeholder="Add a message... (e.g. APAC shipment at risk — need logistics recovery options)"></textarea>
+                <div class="flex items-center justify-between mt-2">
+                  <div class="flex items-center gap-3 text-xs text-slate-500">
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600" checked> Include alert context</label>
+                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" class="rounded text-emerald-600"> Include execution chain</label>
+                  </div>
+                  <div class="flex gap-2">
+                    <button onclick="toggleQuickNotify('notify-3')" class="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200">Cancel</button>
+                    <button onclick="sendQuickNotify('notify-3')" class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">Send Notification</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Execution Chain (expandable) -->
+            <div id="chain-3" class="hidden border-t-2 border-red-200 bg-white">
+              <div class="px-5 py-4">
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded">FDOS Execution Chain</span>
+                  <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-bold rounded">Scenario Pack Prepared</span>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Step 1 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                      <div class="w-0.5 flex-1 bg-blue-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Signal Detected</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS detected a logistics ETA slip affecting outbound shipment readiness.</div>
+                      <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1 text-xs text-slate-700">
+                        <div>• Shipment ETA delayed by 2 days</div>
+                        <div>• APAC delivery window now at risk</div>
+                        <div>• Customer commit sensitivity flagged as high</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 2 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                      <div class="w-0.5 flex-1 bg-amber-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">System Analysis</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS evaluated downstream shipment exposure and recovery urgency.</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Primary Constraint</div>
+                          <div class="text-xs font-medium text-slate-800">Logistics delay affecting shipment readiness</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Impact Projection</div>
+                          <div class="text-xs font-medium text-slate-800">APAC commit miss probability: 65%</div>
+                          <div class="text-xs text-slate-600">1 major regional shipment exposed</div>
+                          <div class="text-xs text-slate-600">Customer impact if no action taken</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                          <div class="text-xs text-slate-500 mb-0.5">Confidence</div>
+                          <div class="text-xs font-bold text-red-700">HIGH</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 3 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                      <div class="w-0.5 flex-1 bg-purple-200 mt-1"></div>
+                    </div>
+                    <div class="flex-1 pb-4">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Decision Triggered</div>
+                      <div class="text-xs text-slate-600 mb-2">FDOS generated a logistics recovery decision candidate.</div>
+                      <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-2 py-0.5 bg-purple-600 text-white text-xs font-bold rounded">Decision Threshold Exceeded</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-xs mt-2">
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Candidate</div>
+                            <div class="font-medium text-slate-800">Protect APAC shipment commit</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Owner</div>
+                            <div class="font-medium text-slate-800">China Delivery Team</div>
+                          </div>
+                          <div>
+                            <div class="text-slate-500 mb-0.5">Decision Window</div>
+                            <div class="font-medium text-slate-800">48 hours</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 4 -->
+                  <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                      <div class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</div>
+                    </div>
+                    <div class="flex-1">
+                      <div class="text-sm font-bold text-slate-900 mb-1">Recommended Next Step</div>
+                      <div class="text-xs text-slate-600 mb-2">Recovery paths are ready for evaluation in Decision Center.</div>
+                      <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                        <div class="text-xs font-semibold text-slate-700 mb-2">Available Options</div>
+                        <div class="space-y-1 text-xs text-slate-700">
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Air freight recovery</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Split shipment by priority</span>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                            <span>Delay lower-priority outbound order</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 flex-wrap">
+                        <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700">Open in Decision Center</button>
+                        <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Open Recovery Analysis</button>
+                        <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Route to China Delivery</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- Team Calendar Section -->
-      <div class="bg-slate-100 rounded-xl shadow-lg overflow-hidden border border-slate-300">
-        <div class="bg-slate-200 px-6 py-4 border-b border-slate-400">
-          <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-slate-800">${monthNames[currentMonth]} ${currentYear}</h2>
-            <div class="flex gap-2">
-              <button class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 rounded-lg transition-colors text-sm font-medium">
-                ◀ Previous
-              </button>
-              <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium">
-                Today
-              </button>
-              <button class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 rounded-lg transition-colors text-sm font-medium">
-                Next ▶
-              </button>
+      <!-- ============================================================ -->
+      <!-- Section 2: Decision Candidates -->
+      <!-- ============================================================ -->
+      <div class="bg-white border-2 border-blue-200 rounded-xl overflow-hidden">
+        <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-blue-900">Decision Candidates</h2>
+            <span class="ml-auto px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">3 Pending</span>
+          </div>
+          <p class="text-xs text-blue-700 mt-1">Signals that may require cross-functional decisions — promoted to Decision Center when confirmed</p>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Decision 1: Yield Constraint -->
+          <div class="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-4">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-bold text-slate-900">Yield Constraint Detected</span>
+                  <span class="text-xs text-slate-500">• Hypernova</span>
+                </div>
+                <div class="text-sm text-slate-700">Assembly yield dropped to 70% — production commit at risk for W04</div>
+              </div>
+            </div>
+            <div class="bg-white border border-blue-200 rounded-lg p-3 mb-3">
+              <div class="text-xs font-semibold text-slate-700 mb-2">Decision Candidate: Protect weekly commit or reduce SKU mix</div>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-xs text-slate-700">Shift capacity from Line 3</span>
+                <span class="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-xs text-slate-700">Run partial build</span>
+                <span class="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-xs text-slate-700">Delay lower priority SKUs</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Owner: Factory Ops</span>
+              <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">Open in Decision Center</button>
+            </div>
+          </div>
+
+          <!-- Decision 2: Alternative Material -->
+          <div class="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-4">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-bold text-slate-900">Alternative Material Opportunity</span>
+                  <span class="text-xs text-slate-500">• Product B</span>
+                </div>
+                <div class="text-sm text-slate-700">Primary supplier delay detected — second supplier available with +2% cost impact</div>
+              </div>
+            </div>
+            <div class="bg-white border border-blue-200 rounded-lg p-3 mb-3">
+              <div class="text-xs font-semibold text-slate-700 mb-2">Decision Candidate: Use alternate supplier or wait for original delivery</div>
+              <div class="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <div>• Shipment risk reduced by 60% if alternative used</div>
+                <div>• FV cost increase estimated at +2%</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Owner: Sourcing</span>
+              <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">Open in Decision Center</button>
+            </div>
+          </div>
+
+          <!-- Decision 3: Demand Signal Shift -->
+          <div class="border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-4">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-bold text-slate-900">Demand Signal Shift</span>
+                  <span class="text-xs text-slate-500">• Product D</span>
+                </div>
+                <div class="text-sm text-slate-700">Demand forecast decreased by 15% — overproduction risk</div>
+              </div>
+            </div>
+            <div class="bg-white border border-blue-200 rounded-lg p-3 mb-3">
+              <div class="text-xs font-semibold text-slate-700 mb-2">Decision Candidate: Adjust production plan or maintain buffer</div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Owner: Demand Planning</span>
+              <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">Open in Decision Center</button>
             </div>
           </div>
         </div>
-
-        <!-- Day of week headers -->
-        <div class="grid grid-cols-7 bg-slate-300 text-slate-700 text-center text-sm font-semibold border-b border-slate-400">
-          <div class="py-3 border-r border-slate-400">Sun</div>
-          <div class="py-3 border-r border-slate-400">Mon</div>
-          <div class="py-3 border-r border-slate-400">Tue</div>
-          <div class="py-3 border-r border-slate-400">Wed</div>
-          <div class="py-3 border-r border-slate-400">Thu</div>
-          <div class="py-3 border-r border-slate-400">Fri</div>
-          <div class="py-3">Sat</div>
-        </div>
-
-        <!-- Calendar grid -->
-        ${calendarHTML}
       </div>
 
-      <!-- Future Features Notice -->
-      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+      <!-- ============================================================ -->
+      <!-- Section 3: Operational Updates -->
+      <!-- ============================================================ -->
+      <div class="bg-white border-2 border-slate-200 rounded-xl overflow-hidden">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-800">Operational Updates</h2>
+            <span class="ml-auto px-2 py-0.5 bg-slate-200 text-slate-600 text-xs font-bold rounded-full">3 Updates</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Important execution changes that do not require immediate decisions</p>
+        </div>
+
+        <div class="p-5 space-y-3">
+          <!-- Update 1: Engineering Change -->
+          <div class="flex items-start gap-4 border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+            <div class="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">🔧</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-bold text-slate-900">Engineering Change Released</span>
+                <span class="text-xs text-slate-500">• Hypernova</span>
+              </div>
+              <div class="text-sm text-slate-600">ECO-142 assembly process update — new torque specification for hinge module</div>
+              <div class="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                <span>Effective starting W05</span>
+                <span>Owner: Engineering</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Update 2: NPI Milestone -->
+          <div class="flex items-start gap-4 border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+            <div class="flex-shrink-0 w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-lg">✅</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-bold text-slate-900">NPI Milestone Achieved</span>
+                <span class="text-xs text-slate-500">• SmartGlass V2</span>
+              </div>
+              <div class="text-sm text-slate-600">Line qualification completed — production ramp ready</div>
+              <div class="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                <span>Owner: Factory Ops</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Update 3: Factory Capacity -->
+          <div class="flex items-start gap-4 border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+            <div class="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-lg">🏭</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-bold text-slate-900">Factory Capacity Update</span>
+                <span class="text-xs text-slate-500">• Shenzhen Campus</span>
+              </div>
+              <div class="text-sm text-slate-600">Line 4 available after maintenance — additional capacity available for next build cycle</div>
+              <div class="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                <span>Owner: Site Operations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- Section: DRI Confirmation & Leader Feedback Loop -->
+      <!-- ============================================================ -->
+      <div class="bg-white border-2 border-indigo-200 rounded-xl overflow-hidden">
+        <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-indigo-500 rounded-full"></div>
+            <h2 class="text-lg font-bold text-indigo-900">Information Review Loop</h2>
+            <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-full">L3 Validation</span>
+          </div>
+          <p class="text-xs text-indigo-700 mt-1">System-generated insights sent to DRI for confirmation before Leader review. Leaders can acknowledge, request clarification, or request more info.</p>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Item 1: Confirmed by DRI -->
+          <div class="border border-emerald-200 rounded-xl overflow-hidden">
+            <div class="bg-emerald-50 px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-emerald-600 text-white text-xs font-bold rounded">CONFIRMED</span>
+                <span class="text-sm font-semibold text-slate-800">W04 Commit Risk Assessment — Product A</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">&#10003; Confirmed by Wei Chen (DRI)</span>
+                <span>2h ago</span>
+              </div>
+            </div>
+            <div class="px-4 py-3">
+              <div class="bg-white border border-slate-100 rounded-lg p-3 mb-3">
+                <div class="text-xs text-slate-500 mb-1 font-medium">System-Generated Insight (L3)</div>
+                <div class="text-sm text-slate-700">Product A W04 commit gap at -15.5% (12,400 units). Primary driver: yield drop on WF-L1. Recovery options prepared with cost-benefit analysis.</div>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 bg-purple-50 text-purple-700 text-[10px] font-medium rounded">AI Generated</span>
+                  <span class="text-[10px] text-slate-400">Source: MES + Plan Engine | Updated: 45 min ago</span>
+                </div>
+              </div>
+              <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 mb-3">
+                <div class="text-xs text-emerald-600 font-medium mb-1">DRI Comment (Wei Chen)</div>
+                <div class="text-sm text-slate-700">Confirmed. PQE has identified root cause as solder joint defect. Containment action in progress, expecting partial yield recovery by tomorrow.</div>
+              </div>
+              <!-- Leader Actions -->
+              <div class="border-t border-slate-100 pt-3">
+                <div class="text-xs text-slate-500 mb-2 font-medium">Leader Response</div>
+                <div class="flex gap-2 flex-wrap">
+                  <button onclick="leaderAction(this, 'acknowledge')" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700" style="cursor:pointer;">&#10003; Acknowledge</button>
+                  <button onclick="leaderAction(this, 'clarify')" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50" style="cursor:pointer;">? Request Clarification</button>
+                  <button onclick="leaderAction(this, 'more')" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50" style="cursor:pointer;">+ Request More Info</button>
+                  <div class="ml-auto flex items-center gap-1">
+                    <input type="text" class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs w-48 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Add comment...">
+                    <button class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700" style="cursor:pointer;">Send</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 2: Pending DRI Confirmation -->
+          <div class="border border-amber-200 rounded-xl overflow-hidden">
+            <div class="bg-amber-50 px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded">PENDING</span>
+                <span class="text-sm font-semibold text-slate-800">IC-77 Material Shortage Impact — Product A</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Awaiting Sarah Wang (DRI)</span>
+                <span>Sent 4h ago</span>
+              </div>
+            </div>
+            <div class="px-4 py-3">
+              <div class="bg-white border border-slate-100 rounded-lg p-3 mb-3">
+                <div class="text-xs text-slate-500 mb-1 font-medium">System-Generated Insight (L3)</div>
+                <div class="text-sm text-slate-700">IC-77 supplier ETA slip +2 days. Impact: 2,800 units input reduction → 2,520 output loss → W05 commit gap -5.2%. Three recovery options available (expedite $120k / partial $65k / wait $0).</div>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="px-1.5 py-0.5 bg-purple-50 text-purple-700 text-[10px] font-medium rounded">AI Generated</span>
+                  <span class="text-[10px] text-slate-400">Source: Sourcing + Plan Engine | Updated: 4h ago</span>
+                </div>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-700 flex items-center gap-2">
+                <div class="animate-pulse w-2 h-2 bg-amber-500 rounded-full"></div>
+                Waiting for DRI to confirm or supplement before making visible to Leader
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 3: Leader has commented -->
+          <div class="border border-blue-200 rounded-xl overflow-hidden">
+            <div class="bg-blue-50 px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded">CLARIFICATION</span>
+                <span class="text-sm font-semibold text-slate-800">VN02 Labor Fill Rate — Weekend OT</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">&#10003; Confirmed by James Li (DRI)</span>
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">Leader asked for clarification</span>
+              </div>
+            </div>
+            <div class="px-4 py-3">
+              <div class="bg-white border border-slate-100 rounded-lg p-3 mb-3">
+                <div class="text-xs text-slate-500 mb-1 font-medium">System-Generated Insight (L3)</div>
+                <div class="text-sm text-slate-700">VN02 weekend OT fill rate at 87%. Impact: -13% UPH if unfilled. 3 open positions need to be covered for Saturday shift.</div>
+              </div>
+              <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-2">
+                <div class="text-xs text-blue-600 font-medium mb-1">Leader Comment (Director)</div>
+                <div class="text-sm text-slate-700">What's the cost difference between agency temp workers vs internal OT for the 3 positions? Need this for OT budget approval.</div>
+                <div class="text-[10px] text-slate-400 mt-1">1h ago</div>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-700 flex items-center gap-2">
+                <div class="animate-pulse w-2 h-2 bg-amber-500 rounded-full"></div>
+                DRI James Li is preparing updated cost comparison — new information cycle triggered
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- Section 4: Execution Calendar -->
+      <!-- ============================================================ -->
+      <div class="bg-white border-2 border-slate-200 rounded-xl overflow-hidden">
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+          <h2 class="text-lg font-bold text-slate-800">Execution Calendar</h2>
+          <p class="text-xs text-slate-500 mt-1">Near-term operational events that influence execution coordination</p>
+        </div>
+
+        <div class="p-5 space-y-3">
+          <div class="flex items-start gap-4 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg p-4">
+            <div class="flex-shrink-0 text-center">
+              <div class="text-xs font-bold text-blue-800 uppercase">Tue</div>
+              <div class="text-lg font-bold text-blue-900">10:00</div>
+              <div class="text-xs text-blue-600">AM</div>
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900">Weekly Commit Review</div>
+              <div class="text-xs text-slate-600 mt-1">Review weekly Ex-Factory commit status</div>
+              <div class="text-xs text-slate-500 mt-1">Owner: MO Team</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4 border-l-4 border-green-500 bg-green-50 rounded-r-lg p-4">
+            <div class="flex-shrink-0 text-center">
+              <div class="text-xs font-bold text-green-800 uppercase">Thu</div>
+              <div class="text-lg font-bold text-green-900">3:00</div>
+              <div class="text-xs text-green-600">PM</div>
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900">NPI Ramp Readiness Review</div>
+              <div class="text-xs text-slate-600 mt-1">Confirm ramp readiness for next build cycle — SmartGlass V2</div>
+              <div class="text-xs text-slate-500 mt-1">Owner: Factory Ops + Engineering</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg p-4">
+            <div class="flex-shrink-0 text-center">
+              <div class="text-xs font-bold text-purple-800 uppercase">Fri</div>
+              <div class="text-lg font-bold text-purple-900">11:00</div>
+              <div class="text-xs text-purple-600">AM</div>
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-slate-900">Factory Operations Sync</div>
+              <div class="text-xs text-slate-600 mt-1">Cross-functional alignment on production status and risks</div>
+              <div class="text-xs text-slate-500 mt-1">Participants: MO / MPM / Planning / Engineering</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- Optional: AI Signal Summary -->
+      <!-- ============================================================ -->
+      <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5">
         <div class="flex items-start gap-4">
-          <div class="text-3xl">🚀</div>
+          <div class="flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-lg">🤖</div>
           <div class="flex-1">
-            <h3 class="text-lg font-bold text-amber-900 mb-2">Coming Soon: Smart Notifications</h3>
-            <ul class="space-y-2 text-sm text-amber-800">
-              <li>✓ Email notifications for upcoming deadlines</li>
-              <li>✓ Chat integration (Teams/Slack) for real-time alerts</li>
-              <li>✓ Team member assignment and workload tracking</li>
-              <li>✓ Automatic reminders based on priority levels</li>
-              <li>✓ Calendar event sync with holidays and team schedules</li>
-            </ul>
+            <div class="text-sm font-bold text-indigo-900 mb-2">AI Signal Summary</div>
+            <div class="text-sm text-indigo-800 mb-3">AI detected <strong>3 operational signals</strong> that may affect this week's execution.</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div class="bg-white border border-indigo-200 rounded-lg p-3">
+                <div class="font-semibold text-slate-700 mb-1">Primary Constraint</div>
+                <div class="text-slate-600">Yield drop on Hypernova assembly line</div>
+              </div>
+              <div class="bg-white border border-indigo-200 rounded-lg p-3">
+                <div class="font-semibold text-slate-700 mb-1">Recommended Attention</div>
+                <div class="text-slate-600">Review W04 commit protection scenario</div>
+              </div>
+              <div class="bg-white border border-indigo-200 rounded-lg p-3">
+                <div class="font-semibold text-slate-700 mb-1">Potential Recovery</div>
+                <div class="text-slate-600">Capacity reallocation may recover 3,000 units</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   `;
+
 }
+
+// Quick Notify toggle
+window.toggleQuickNotify = function(notifyId) {
+  const panel = document.getElementById(notifyId);
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+};
+
+// Toggle @mention selection
+window.toggleMention = function(btn) {
+  if (btn.classList.contains('bg-blue-100')) {
+    btn.classList.remove('bg-blue-100', 'border-blue-300', 'text-blue-800');
+    btn.classList.add('bg-slate-100', 'border-slate-200', 'text-slate-700');
+  } else {
+    btn.classList.remove('bg-slate-100', 'border-slate-200', 'text-slate-700');
+    btn.classList.add('bg-blue-100', 'border-blue-300', 'text-blue-800');
+  }
+};
+
+// Send quick notification (demo)
+window.sendQuickNotify = function(notifyId) {
+  const panel = document.getElementById(notifyId);
+  if (!panel) return;
+  const selected = panel.querySelectorAll('.bg-blue-100');
+  if (selected.length === 0) {
+    alert('Please select at least one team member to notify.');
+    return;
+  }
+  const names = Array.from(selected).map(b => b.textContent.trim()).join(', ');
+  const msg = panel.querySelector('textarea').value;
+  const contextLabel = panel.querySelector('.text-emerald-800').nextElementSibling.textContent.trim();
+
+  // Show success feedback
+  panel.innerHTML = '<div class="flex items-center gap-3 py-2"><div class="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">✓</div><div><div class="text-xs font-bold text-emerald-800">Notification sent successfully</div><div class="text-xs text-slate-600 mt-0.5">Notified: ' + names + '</div></div></div>';
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    panel.classList.add('hidden');
+    // Re-render to reset panel state
+    renderNotification();
+  }, 3000);
+};
+
+// Leader action on DRI-confirmed items
+window.leaderAction = function(btn, action) {
+  var container = btn.closest('.border-t');
+  if (!container) return;
+  var labels = { acknowledge: 'Acknowledged', clarify: 'Clarification Requested', more: 'More Info Requested' };
+  var colors = { acknowledge: 'bg-emerald-100 text-emerald-800', clarify: 'bg-blue-100 text-blue-800', more: 'bg-amber-100 text-amber-800' };
+  container.innerHTML =
+    '<div class="flex items-center gap-2 py-1">' +
+      '<span class="px-2 py-1 text-xs font-bold rounded ' + (colors[action] || 'bg-slate-100 text-slate-700') + '">' + (labels[action] || action) + '</span>' +
+      '<span class="text-xs text-slate-500">by Leader — just now</span>' +
+    '</div>';
+};
+
+// Generate AI Alert Brief — uses the AI Drawer (same mechanism as openAIDrawer)
+window.generateAlertBrief = function() {
+  const drawerBody = document.getElementById('aiDrawerBody');
+  const drawer = document.getElementById('aiDrawer');
+  const backdrop = document.getElementById('aiDrawerBackdrop');
+  if (!drawerBody || !drawer || !backdrop) return;
+
+  // Show loading state
+  drawerBody.innerHTML = `
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+      <div class="text-sm text-slate-600">Analyzing execution signals and generating brief...</div>
+    </div>
+  `;
+  drawer.classList.remove('hidden');
+  backdrop.classList.remove('hidden');
+
+  // Simulate AI generation delay
+  setTimeout(() => {
+    drawerBody.innerHTML = `
+      <div class="space-y-5">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-lg">🤖</span>
+            <h2 class="text-lg font-bold text-indigo-900">AI-Generated Alert Brief</h2>
+            <span class="px-2 py-0.5 bg-indigo-200 text-indigo-800 text-xs font-bold rounded">AI GENERATED</span>
+          </div>
+          <p class="text-xs text-indigo-700">Generated from 3 active execution alerts — ${new Date().toLocaleString()}</p>
+        </div>
+
+        <!-- Executive Summary -->
+        <div>
+          <div class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-2">Executive Summary</div>
+          <div class="bg-white border border-indigo-200 rounded-lg p-4">
+            <p class="text-sm text-slate-800 leading-relaxed">
+              <strong>3 active execution risks</strong> have been detected across the factory network this week.
+              The primary constraint is a <strong>yield degradation on Hypernova final assembly</strong>, placing 12,400 units at risk for the W04 shipment commit.
+              A secondary material shortage (IC-77) affects SmartGlass V2 production input, and a logistics ETA slip threatens APAC shipment delivery for Product C.
+              Immediate attention is required within the next <strong>24–48 hours</strong> to protect weekly delivery commitments.
+            </p>
+          </div>
+        </div>
+
+        <!-- Active Risks Table -->
+        <div>
+          <div class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-2">Active Risks Summary</div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse bg-white rounded-lg overflow-hidden">
+              <thead>
+                <tr class="bg-slate-100">
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Severity</th>
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Alert</th>
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Program</th>
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Impact</th>
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Window</th>
+                  <th class="text-left p-2.5 border border-slate-200 font-semibold text-slate-700">Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="p-2.5 border border-slate-200"><span class="px-1.5 py-0.5 bg-red-100 text-red-800 font-bold rounded text-xs">HIGH</span></td>
+                  <td class="p-2.5 border border-slate-200 font-medium">Production Output Risk</td>
+                  <td class="p-2.5 border border-slate-200">Hypernova</td>
+                  <td class="p-2.5 border border-slate-200">12,400 units at risk</td>
+                  <td class="p-2.5 border border-slate-200">24h</td>
+                  <td class="p-2.5 border border-slate-200">Factory Ops</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 border border-slate-200"><span class="px-1.5 py-0.5 bg-orange-100 text-orange-800 font-bold rounded text-xs">MED</span></td>
+                  <td class="p-2.5 border border-slate-200 font-medium">Material Readiness Risk</td>
+                  <td class="p-2.5 border border-slate-200">SmartGlass V2</td>
+                  <td class="p-2.5 border border-slate-200">8,000 units exposed</td>
+                  <td class="p-2.5 border border-slate-200">36h</td>
+                  <td class="p-2.5 border border-slate-200">MPM</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 border border-slate-200"><span class="px-1.5 py-0.5 bg-red-100 text-red-800 font-bold rounded text-xs">HIGH</span></td>
+                  <td class="p-2.5 border border-slate-200 font-medium">Shipment Delay Risk</td>
+                  <td class="p-2.5 border border-slate-200">Product C</td>
+                  <td class="p-2.5 border border-slate-200">APAC commit at risk</td>
+                  <td class="p-2.5 border border-slate-200">48h</td>
+                  <td class="p-2.5 border border-slate-200">China Delivery</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Key Decisions Required -->
+        <div>
+          <div class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-2">Key Decisions Required</div>
+          <div class="space-y-2">
+            <div class="bg-white border border-indigo-200 rounded-lg p-3 flex items-start gap-3">
+              <div class="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">Protect W04 Shipment Commit — Hypernova</div>
+                <div class="text-xs text-slate-600 mt-0.5">Yield dropped from 86% to 70% on final assembly. Decision required within 24 hours to protect 12,400 units.</div>
+                <div class="text-xs text-slate-500 mt-1">Owner: Factory Operations | Options: Shift capacity, partial build, delay low-priority SKUs</div>
+              </div>
+            </div>
+            <div class="bg-white border border-indigo-200 rounded-lg p-3 flex items-start gap-3">
+              <div class="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">Material Sourcing Decision — SmartGlass V2</div>
+                <div class="text-xs text-slate-600 mt-0.5">IC-77 supplier ETA slipped by 2 days. Alternate supplier available at +2% cost. Decision needed within 36 hours.</div>
+                <div class="text-xs text-slate-500 mt-1">Owner: MPM / Sourcing | Options: Activate alternate supplier, reallocate CTB, delay production input</div>
+              </div>
+            </div>
+            <div class="bg-white border border-indigo-200 rounded-lg p-3 flex items-start gap-3">
+              <div class="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">APAC Shipment Recovery — Product C</div>
+                <div class="text-xs text-slate-600 mt-0.5">Logistics ETA delayed by 2 days. APAC commit miss probability: 65%. Decision required within 48 hours.</div>
+                <div class="text-xs text-slate-500 mt-1">Owner: China Delivery Team | Options: Air freight, split shipment, delay lower-priority order</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommended Actions -->
+        <div>
+          <div class="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-2">Recommended Immediate Actions</div>
+          <div class="bg-white border border-indigo-200 rounded-lg p-4">
+            <div class="space-y-2 text-sm text-slate-700">
+              <div class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">1.</span>
+                <span><strong>Factory Ops:</strong> Evaluate capacity shift from Line 3 to recover Hypernova output — estimated recovery of 3,200–7,000 units depending on scenario selected.</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">2.</span>
+                <span><strong>MPM / Sourcing:</strong> Confirm alternate supplier availability for IC-77 and assess FV cost impact before production input deadline.</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-indigo-600 font-bold">3.</span>
+                <span><strong>China Delivery:</strong> Initiate air freight assessment for APAC shipment and identify orders eligible for priority split.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span>🤖 Generated by FDOS AI</span>
+            <span>•</span>
+            <span>Based on 3 active signals, 3 execution chains, and 9 scenario options</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="copyAlertBrief()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700">Copy Brief</button>
+            <button onclick="navigateTo('portfolio');" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50">Open Decision Center</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }, 1500);
+};
+
+// Copy alert brief to clipboard
+window.copyAlertBrief = function() {
+  const briefContent = document.getElementById('aiDrawerBody');
+  if (!briefContent) return;
+
+  const text = briefContent.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btns = document.querySelectorAll('[onclick="copyAlertBrief()"]');
+    btns.forEach(btn => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('bg-green-600');
+      btn.classList.remove('bg-indigo-600', 'bg-white');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('bg-green-600');
+        if (orig === 'Copy Brief') btn.classList.add('bg-indigo-600');
+        else btn.classList.add('bg-white');
+      }, 2000);
+    });
+  });
+};
+
+// Toggle execution chain visibility on Notification page
+window.toggleExecutionChain = function(chainId) {
+  const chain = document.getElementById(chainId);
+  if (!chain) return;
+  const parentCard = chain.closest('.border-l-4');
+  const btn = parentCard ? parentCard.querySelector('[onclick*="toggleExecutionChain"]') : null;
+  if (chain.classList.contains('hidden')) {
+    chain.classList.remove('hidden');
+    if (btn) btn.textContent = 'Hide Execution Chain';
+  } else {
+    chain.classList.add('hidden');
+    if (btn) btn.textContent = 'Show Execution Chain';
+  }
+};

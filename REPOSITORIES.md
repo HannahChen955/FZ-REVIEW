@@ -54,6 +54,46 @@ This document explains the repository organization for the FDOS (Factory Deliver
 
 ---
 
+### 3. FZ-Review Repository
+**Repository URL:** https://github.com/HannahChen955/FZ-REVIEW
+
+**Purpose:** Dedicated repository for FZ Review demo branch — experimental UI/presentation changes, SCO KPI alignment, and FDOS briefing document updates.
+
+**Content:**
+- Full FDOS codebase on the `FZ-Review` branch
+- SCO-aligned KPI framework updates (MO KPIs, Data Foundation)
+- FDOS_BRIEFING.md conceptual restructure (v2.0)
+- Before/After operating model tables
+- Impact Assessment Chain, DRI confirmation loop, Report Center
+
+**Update Policy:**
+- Push FZ-Review branch changes here: `git push fz-review FZ-Review`
+- Remote name: `fz-review`
+
+---
+
+## 🌿 Active Branches
+
+### `main` — Stable Production Branch
+The default branch with all validated, production-ready code.
+
+### `FZ-Review` — Experimental Branch (Created 2026-03-10)
+**Purpose:** Experimental UI/presentation changes for FZ Review demo preparation.
+
+**Branch base:** `main` @ commit `040e8a4`
+
+**Changes included at branch creation:**
+- Renamed app from "SCDO Control Tower" to "FDOS — Factory Delivery Orchestration System"
+- Added demo calendar events for March (China AI Day, FZ Review, NPI Review, Echo's All Hands)
+- Swapped To-Do List and Calendar order on Notification page
+
+**Safety:**
+- All experimental changes happen here — `main` is unaffected
+- Merge back to `main` when satisfied: `git checkout main && git merge FZ-Review`
+- Discard if not needed: `git branch -D FZ-Review`
+
+---
+
 ## 🔄 Workflow
 
 ### When updating FDOS core features:
@@ -115,4 +155,4 @@ python3 -m http.server 8000
 
 ---
 
-**Last Updated:** 2026-02-26
+**Last Updated:** 2026-03-11

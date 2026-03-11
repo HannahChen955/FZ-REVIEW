@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FDOS — Factory Delivery Orchestration System</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --accent: #6c8cff;
+    --accent2: #a78bfa;
+    --accent3: #38bdf8;
+    --dim: #555570;
+    --text: #c8c8d8;
+    --bright: #ffffff;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #08080e;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- Slide engine ---- */
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: scale(0.97);
+    /* 16:9 pad */
+    padding: 72px 100px 64px;
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+    z-index: 2;
+  }
+
+  /* ---- Typography ---- */
+  .tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(2.6rem, 5vw, 4.2rem);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  h1 .grad {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .sub {
+    font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+    color: var(--dim);
+    margin-top: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  /* ---- Layouts ---- */
+  .layout-left {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 55%;
+  }
+
+  .layout-split {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 80px;
+    width: 100%;
+  }
+  .layout-split .left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .layout-split .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .layout-center {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* ---- Flow diagram ---- */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .flow-node {
+    padding: 18px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--bright);
+    background: rgba(108,140,255,0.1);
+    border: 1px solid rgba(108,140,255,0.2);
+    white-space: nowrap;
+  }
+  .flow-node:nth-child(5) { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.25); color: var(--accent2); }
+  .flow-node:nth-child(9) { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.25); color: var(--accent3); }
+  .flow-node:nth-child(13) { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.25); color: #34d399; }
+  .flow-arrow {
+    padding: 0 14px;
+    color: var(--dim);
+    font-size: 1.3rem;
+  }
+
+  /* ---- Timeline ---- */
+  .timeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 20px; right: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    opacity: 0.3;
+  }
+  .tl-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .tl-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 24px rgba(108,140,255,0.5);
+  }
+  .tl-item:nth-child(2) .tl-dot { background: #818cf8; box-shadow: 0 0 20px rgba(129,140,248,0.4); }
+  .tl-item:nth-child(3) .tl-dot { background: var(--accent2); box-shadow: 0 0 20px rgba(167,139,250,0.4); }
+  .tl-item:nth-child(4) .tl-dot { background: #c084fc; box-shadow: 0 0 20px rgba(192,132,252,0.4); }
+  .tl-item:nth-child(5) .tl-dot { background: var(--accent3); box-shadow: 0 0 20px rgba(56,189,248,0.4); }
+  .tl-year {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--bright);
+    margin-bottom: 6px;
+  }
+  .tl-label {
+    font-size: 0.85rem;
+    color: var(--text);
+    max-width: 160px;
+    line-height: 1.55;
+  }
+
+  /* ---- Timeline v2 ---- */
+  .timeline-v2 {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    position: relative;
+    padding: 0 10px;
+  }
+  .tl2-line {
+    position: absolute;
+    top: 7px;
+    left: 30px; right: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    opacity: 0.3;
+  }
+  .tl2-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .tl2-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 16px rgba(108,140,255,0.5);
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .tl2-year {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--bright);
+    margin-bottom: 6px;
+  }
+  .tl2-content {
+    font-size: 0.75rem;
+    color: var(--text);
+    line-height: 1.55;
+    max-width: 150px;
+  }
+
+  /* ---- Phase summary ---- */
+  .phase-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .phase-card {
+    flex: 1;
+    background: var(--bg-card, rgba(255,255,255,0.04));
+    border: 1px solid rgba(108,140,255,0.12);
+    border-radius: 12px;
+    padding: 18px 22px;
+  }
+  .phase-card:nth-child(3) { border-color: rgba(167,139,250,0.15); }
+  .phase-card:nth-child(5) { border-color: rgba(56,189,248,0.15); }
+  .phase-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+  .phase-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .phase-range {
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+  .phase-desc {
+    font-size: 0.8rem;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .phase-arrow {
+    font-size: 1.2rem;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  /* ---- Small flow (tip slides) ---- */
+  .mini-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 32px 0;
+  }
+  .mini-flow .node {
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: rgba(108,140,255,0.08);
+    border: 1px solid rgba(108,140,255,0.2);
+    color: var(--accent);
+  }
+  .mini-flow .node.highlight { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.25); color: var(--accent2); }
+  .mini-flow .node.end { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.25); color: var(--accent3); }
+  .mini-flow .arr {
+    padding: 0 12px;
+    color: var(--dim);
+    font-size: 1.1rem;
+  }
+
+  /* ---- Comparison columns ---- */
+  .compare {
+    display: flex;
+    gap: 48px;
+    margin: 28px 0;
+  }
+  .compare-col {
+    flex: 1;
+  }
+  .compare-col h3 {
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .compare-col.before h3 { color: var(--dim); }
+  .compare-col.after h3 { color: var(--accent); }
+  .compare-col p {
+    font-size: 1rem;
+    line-height: 2;
+    color: var(--dim);
+  }
+  .compare-col.after p { color: var(--text); }
+
+  /* ---- Keyword pills ---- */
+  .pills {
+    display: flex;
+    gap: 12px;
+    margin: 28px 0;
+    flex-wrap: wrap;
+  }
+  .pill {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    background: rgba(108,140,255,0.08);
+    border: 1px solid rgba(108,140,255,0.18);
+    color: var(--text);
+  }
+
+  /* ---- Quote ---- */
+  .quote {
+    margin-top: 24px;
+    font-style: italic;
+    color: var(--dim);
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  }
+  .quote .attr { font-style: normal; opacity: 0.5; }
+
+  /* ---- Bottom line ---- */
+  .bottom-line {
+    position: absolute;
+    bottom: 64px;
+    left: 100px;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    color: var(--dim);
+  }
+  .bottom-line strong { color: var(--bright); font-weight: 600; }
+
+  /* ---- Big closing ---- */
+  .big {
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.35;
+  }
+  .big .dim { color: var(--dim); font-weight: 400; }
+
+  /* ---- Keynote message ---- */
+  .msg {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    color: var(--text);
+    margin-top: 20px;
+    font-weight: 500;
+  }
+
+  /* ---- Nav dots ---- */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+  .nav button {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+  }
+  .nav button.on {
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(108,140,255,0.6);
+    transform: scale(1.4);
+  }
+
+  /* ---- Decorative glows ---- */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    pointer-events: none;
+    opacity: 0.08;
+  }
+  /* Tip examples */
+  .tip-examples {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 28px 0 24px;
+  }
+  .tip-ex-col {
+    flex: 1;
+  }
+  .tip-ex-header {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .dim-header { color: var(--dim); }
+  .accent-header { color: var(--accent); }
+  .tip-ex-item {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    color: var(--dim);
+    border-left: 2px solid rgba(255,255,255,0.06);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .tip-ex-item.accent-item {
+    color: var(--text);
+    border-left-color: var(--accent);
+  }
+  .tip-ex-arrow {
+    font-size: 1.5rem;
+    color: var(--accent);
+    opacity: 0.4;
+    flex-shrink: 0;
+    padding-top: 20px;
+  }
+
+  /* Key points */
+  .key-points {
+    list-style: none;
+    margin-top: 24px;
+  }
+  .key-points li {
+    padding: 6px 0 6px 20px;
+    position: relative;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .key-points li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 14px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* Speed stats */
+  .speed-stats {
+    display: flex;
+    gap: 24px;
+    margin: 32px 0 24px;
+  }
+  .stat-card {
+    background: rgba(108,140,255,0.06);
+    border: 1px solid rgba(108,140,255,0.12);
+    border-radius: 12px;
+    padding: 20px 28px;
+    flex: 1;
+  }
+  .stat-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
+  .stat-card:nth-child(2) .stat-number { color: var(--accent2); }
+  .stat-card:nth-child(3) .stat-number { color: var(--accent3); }
+  .stat-card:nth-child(2) { border-color: rgba(167,139,250,0.15); background: rgba(167,139,250,0.05); }
+  .stat-card:nth-child(3) { border-color: rgba(56,189,248,0.15); background: rgba(56,189,248,0.05); }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .stat-desc {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .glow-a { width: 600px; height: 600px; background: var(--accent); top: -250px; right: -150px; }
+  .glow-b { width: 400px; height: 400px; background: var(--accent2); bottom: -200px; left: -100px; }
+
+  /* App preview (browser frame) */
+  .app-preview {
+    width: 560px;
+    height: 460px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #1a1a1a;
+    box-shadow: 0 12px 60px rgba(0,0,0,0.6), 0 0 80px rgba(108,140,255,0.06);
+    position: relative;
+  }
+  .app-preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    height: 32px;
+  }
+  .app-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .app-preview-url {
+    font-size: 0.6rem;
+    color: var(--dim);
+    margin-left: 10px;
+    letter-spacing: 0.02em;
+  }
+  .app-preview .iframe-wrap {
+    width: 100%;
+    height: calc(100% - 32px);
+    overflow: hidden;
+    position: relative;
+  }
+  .app-preview iframe {
+    width: 200%;
+    height: 200%;
+    border: none;
+    background: #fff;
+    transform: scale(0.5);
+    transform-origin: top left;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 — Title + Visual (split layout) -->
+<div class="slide active" data-i="0">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split">
+    <div class="left">
+      <span class="tag">Prototype</span>
+      <h1><span class="grad">FDOS</span><br>Factory Delivery<br>Orchestration System</h1>
+      <p class="sub">AI-assisted workflow orchestration</p>
+      <ul class="key-points">
+        <li>A prototype exploring AI-assisted workflow orchestration</li>
+        <li>Helping operational teams manage work more intelligently</li>
+        <li>Integrates AI across the workflow, not as isolated tools</li>
+      </ul>
+    </div>
+    <div class="right">
+      <div class="app-preview">
+        <div class="app-preview-bar">
+          <span class="app-dot" style="background:#ff5f57;"></span>
+          <span class="app-dot" style="background:#febc2e;"></span>
+          <span class="app-dot" style="background:#28c840;"></span>
+          <span class="app-preview-url">scdo-factory-execution-loop.vercel.app</span>
+        </div>
+        <div class="iframe-wrap"><iframe src="https://scdo-factory-execution-loop.vercel.app/" loading="lazy"></iframe></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-line">AI as a tool &rarr; <strong>AI as part of the workflow</strong></div>
+</div>
+
+<!-- SLIDE 2 — Title + Timeline (center layout) -->
+<div class="slide" data-i="1">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split" style="flex-direction:column; align-items:flex-start; gap:28px;">
+    <div>
+      <span class="tag">Context</span>
+      <h1>AI is evolving <span class="grad">faster than anyone expected</span></h1>
+    </div>
+    <div class="timeline-v2">
+      <div class="tl2-line"></div>
+      <div class="tl2-item">
+        <div class="tl2-dot"></div>
+        <div class="tl2-year">2022</div>
+        <div class="tl2-content">ChatGPT<br>Stable Diffusion<br>GitHub Copilot</div>
+      </div>
+      <div class="tl2-item">
+        <div class="tl2-dot" style="background:#818cf8; box-shadow:0 0 16px rgba(129,140,248,0.5);"></div>
+        <div class="tl2-year">2023</div>
+        <div class="tl2-content">GPT-4 / Claude<br>LLaMA / Gemini<br>Midjourney v5</div>
+      </div>
+      <div class="tl2-item">
+        <div class="tl2-dot" style="background:var(--accent2); box-shadow:0 0 16px rgba(167,139,250,0.5);"></div>
+        <div class="tl2-year">2024</div>
+        <div class="tl2-content">Claude 3.5 / GPT-4o<br>Cursor / Devin / Sora<br>DeepSeek / Kimi / Doubao</div>
+      </div>
+      <div class="tl2-item">
+        <div class="tl2-dot" style="background:#c084fc; box-shadow:0 0 16px rgba(192,132,252,0.5);"></div>
+        <div class="tl2-year">2025</div>
+        <div class="tl2-content">DeepSeek R1 / Claude Code<br>Cursor Agents / Manus<br>OpenClaw / Seedance</div>
+      </div>
+      <div class="tl2-item">
+        <div class="tl2-dot" style="background:var(--accent3); box-shadow:0 0 16px rgba(56,189,248,0.5);"></div>
+        <div class="tl2-year">2026+</div>
+        <div class="tl2-content">AI copilots in every tool<br>Agent-driven workflows<br>Autonomous systems</div>
+      </div>
+    </div>
+    <div class="phase-summary">
+      <div class="phase-card">
+        <div class="phase-label">Phase 1</div>
+        <div class="phase-title">Models</div>
+        <div class="phase-range">2022 – 2023</div>
+        <div class="phase-desc">Scaling laws dominate. Large models rapidly improve.</div>
+      </div>
+      <div class="phase-arrow">&rarr;</div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 2</div>
+        <div class="phase-title" style="color:var(--accent2);">Products</div>
+        <div class="phase-range">2023 – 2024</div>
+        <div class="phase-desc">AI moves from research to real applications.</div>
+      </div>
+      <div class="phase-arrow">&rarr;</div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 3</div>
+        <div class="phase-title" style="color:var(--accent3);">Agents</div>
+        <div class="phase-range">2024 – Present</div>
+        <div class="phase-desc">AI begins executing workflows autonomously.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3 — Tip #1 (split layout) -->
+<div class="slide" data-i="2">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split">
+    <div class="left">
+      <span class="tag">Tip #1</span>
+      <h1>Ask: <span class="grad">"What if AI could help?"</span></h1>
+      <p class="msg">Small experiments often lead to big workflow improvements.</p>
+      <div class="quote">"Curiosity drives innovation."</div>
+    </div>
+    <div class="right" style="align-items:flex-start;">
+      <div>
+        <div class="tip-ex-header accent-header">Ask...</div>
+        <div class="tip-ex-item accent-item">What if AI could approach this problem differently than we would?</div>
+        <div class="tip-ex-item accent-item">What if AI could surface insights hidden in the information?</div>
+        <div class="tip-ex-item accent-item">What if AI could help redesign the workflow itself?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4 — Tip #2 (split layout, comparison) -->
+<div class="slide" data-i="3">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split">
+    <div class="left">
+      <span class="tag">Tip #2</span>
+      <h1>Be patient with <span class="grad">your AI journey</span></h1>
+      <p class="msg">Consistency beats perfection.</p>
+    </div>
+    <div class="right" style="align-items:flex-start;">
+      <div style="width:100%;">
+        <div class="tip-ex-header accent-header" style="margin-bottom:14px;">At first vs Over time</div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--dim);">AI feels like a tool</span><br><span style="color:var(--bright);">AI becomes a thinking partner</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--dim);">You try to control every output</span><br><span style="color:var(--bright);">You learn to explore possibilities</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--dim);">You hesitate to trust the process</span><br><span style="color:var(--bright);">You start to work differently</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5 — Tip #3 (big message) -->
+<div class="slide" data-i="4">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split">
+    <div class="left">
+      <span class="tag">Tip #3</span>
+      <h1>Ask AI <span class="grad">directly</span></h1>
+      <p class="msg">Don't know where to start? Just ask.</p>
+      <div class="big" style="font-size:clamp(1.3rem,2vw,1.6rem); margin-top:28px; text-align:left;">
+        AI won't replace people.<br>
+        <span class="dim">People using AI will.</span>
+      </div>
+    </div>
+    <div class="right" style="align-items:flex-start;">
+      <div style="width:100%;">
+        <div class="tip-ex-header accent-header" style="margin-bottom:14px;">Just ask AI...</div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--bright);">Not a developer?</span><br><span style="color:var(--dim);">Ask AI to help you prototype an idea.</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--bright);">Not a data expert?</span><br><span style="color:var(--dim);">Ask AI to analyze patterns in your data.</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--bright);">Not familiar with a new field?</span><br><span style="color:var(--dim);">Ask AI to guide your learning path.</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--bright);">Facing a complex problem outside your expertise?</span><br><span style="color:var(--dim);">Ask AI to help you explore the space.</span></div>
+        <div class="tip-ex-item accent-item"><span style="color:var(--bright);">Have an idea but don't know where to start?</span><br><span style="color:var(--dim);">Ask AI to help you take the first step.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6 — Final Message -->
+<div class="slide" data-i="5">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="layout-split" style="flex-direction:column; align-items:flex-start; gap:0;">
+    <span class="tag">Final Message</span>
+    <h1 style="font-size:clamp(2.8rem,5.5vw,4.5rem);">AI gives us <span class="grad">time back.</span></h1>
+    <p class="sub" style="margin-top:24px; font-size:clamp(1.1rem,1.8vw,1.4rem); color:var(--text); max-width:600px; line-height:1.6;">
+      Time to explore deeper ideas.<br>
+      Time to try things beyond our original expertise.
+    </p>
+    <div class="bottom-line" style="position:relative; bottom:auto; left:auto; margin-top:60px;">
+      <span style="color:var(--dim);">Less time fighting tools.</span><br>
+      <strong>More time exploring possibilities.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav" id="nav"></div>
+
+<script>
+(function(){
+  const slides = document.querySelectorAll('.slide');
+  const n = slides.length;
+  let cur = 0, lock = false;
+  const nav = document.getElementById('nav');
+
+  for(let i=0;i<n;i++){
+    const b = document.createElement('button');
+    if(i===0) b.className='on';
+    b.onclick=()=>go(i);
+    nav.appendChild(b);
+  }
+
+  function go(i){
+    if(lock||i===cur||i<0||i>=n) return;
+    lock=true; cur=i;
+    slides.forEach((s,j)=>{s.classList.toggle('active',j===cur);});
+    nav.querySelectorAll('button').forEach((b,j)=>{b.classList.toggle('on',j===cur);});
+    setTimeout(()=>{lock=false;},520);
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(cur-1);}
+  });
+
+  let tx=0;
+  document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+  document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50){d>0?go(cur+1):go(cur-1);}});
+})();
+</script>
+</body>
+</html>
