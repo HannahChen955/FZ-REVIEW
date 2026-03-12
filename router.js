@@ -47,7 +47,8 @@ const Router = {
       'bto-cto-leadtime': 'bto-cto-leadtime',
       'fv-tracker': 'fv-management',
       'labor-fulfillment': 'labor-fulfillment',
-      'campus-status': 'campus-readiness'
+      'campus-status': 'campus-readiness',
+      'resource-hub': 'resourceHub'
     };
 
     const viewKey = parts[0];
@@ -100,7 +101,8 @@ const Router = {
       // Program workspace sub-views (legacy)
       'mfg-leadtime': 'mo-dashboard',
       'bto-cto-leadtime': 'mo-dashboard',
-      'labor-fulfillment': 'mo-dashboard'
+      'labor-fulfillment': 'mo-dashboard',
+      'resourceHub': 'resource-hub'
     };
 
     let hash = `/${viewUrlMap[view] || 'overview'}`;

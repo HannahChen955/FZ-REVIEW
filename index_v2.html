@@ -35,6 +35,9 @@
       stroke: #64748b;
       stroke-width: 2;
     }
+    .cp-map-marker { background: none !important; border: none !important; }
+    #cp-leaflet-map .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    #cp-leaflet-map .leaflet-popup-tip { box-shadow: none; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -58,40 +61,46 @@
   </div>
 
   <!-- Global Navigation -->
-  <div class="no-print bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 py-2">
-      <div class="flex items-center gap-1">
-        <button onclick="navigateTo('overview');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="overview">
-          Overview
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('notification');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="notification">
-          🔔 Notification
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('portfolio');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="portfolio">
-          Decision Center
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('moKpis');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="moKpis">
-          MO KPIs
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('production-plan');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="production-plan">
-          Production Planning
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('productionMgmt');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="productionMgmt">
-          Production Management
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('fv-management');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="fv-management">
-          FV Cost Management
-        </button>
-        <span class="text-slate-300">|</span>
-        <button onclick="navigateTo('campus-readiness');" class="text-sm px-3 py-1.5 rounded hover:bg-slate-100" data-global-nav="campus-readiness">
-          Campus Planning
-        </button>
+  <div class="no-print bg-slate-50/80 border-b">
+    <div class="max-w-7xl mx-auto px-4 py-2.5">
+      <!-- Row 1: Overall / Team -->
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider bg-blue-50 border border-blue-200 rounded-md px-2 py-0.5 flex-shrink-0">Overall</span>
+        <div class="flex items-center gap-1.5">
+          <button onclick="navigateTo('overview');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="overview">
+            Overview
+          </button>
+          <button onclick="navigateTo('notification');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="notification">
+            🔔 Notification
+          </button>
+          <button onclick="navigateTo('portfolio');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="portfolio">
+            Decision Center
+          </button>
+          <button onclick="navigateTo('moKpis');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="moKpis">
+            MO KPIs
+          </button>
+          <button onclick="navigateTo('resourceHub');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="resourceHub">
+            Resource Hub
+          </button>
+        </div>
+      </div>
+      <!-- Row 2: Program / Project -->
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5 flex-shrink-0">Program</span>
+        <div class="flex items-center gap-1.5">
+          <button onclick="navigateTo('production-plan');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="production-plan">
+            Production Planning
+          </button>
+          <button onclick="navigateTo('productionMgmt');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="productionMgmt">
+            Production Management
+          </button>
+          <button onclick="navigateTo('fv-management');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="fv-management">
+            FV Cost Management
+          </button>
+          <button onclick="navigateTo('campus-readiness');" class="text-sm font-medium px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm" data-global-nav="campus-readiness">
+            Campus Planning
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -478,6 +487,10 @@ Or paste CSV, JSON, or any structured data..."></textarea>
     });
     window.mermaid = mermaid;
   </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./resource_hub.js"></script>
+  <script src="./campus_planning.js"></script>
   <script src="./app_v2.js?v=20260310-fz-review"></script>
 
   <!-- Vercel Web Analytics (Hobby Plan) -->
