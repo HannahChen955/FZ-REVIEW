@@ -22,6 +22,43 @@ window.STATE = STATE;
 
 const $ = (id) => document.getElementById(id);
 
+// ---- Global Product Filter for Production pages ----
+let activeProductFilter = 'all'; // 'all' | 'product_a' | 'product_b' | 'product_c' | 'product_d'
+
+function renderProductFilterBar(page) {
+  const products = [
+    { id: 'all', label: 'All Products', color: 'slate' },
+    { id: 'product_a', label: 'Product A', color: 'blue' },
+    { id: 'product_b', label: 'Product B', color: 'orange' },
+    { id: 'product_c', label: 'Product C', color: 'emerald' },
+    { id: 'product_d', label: 'Product D', color: 'pink' }
+  ];
+  const colorMap = {
+    slate: { active: 'bg-slate-800 text-white', inactive: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50' },
+    blue: { active: 'bg-blue-600 text-white', inactive: 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-50' },
+    orange: { active: 'bg-orange-500 text-white', inactive: 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-50' },
+    emerald: { active: 'bg-emerald-600 text-white', inactive: 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50' },
+    pink: { active: 'bg-pink-600 text-white', inactive: 'bg-white text-pink-700 border border-pink-300 hover:bg-pink-50' }
+  };
+  const buttons = products.map(p => {
+    const isActive = activeProductFilter === p.id;
+    const cm = colorMap[p.color];
+    return `<button onclick="setProductFilter('${p.id}','${page}')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isActive ? cm.active : cm.inactive}">${p.label}</button>`;
+  }).join('');
+  return `<div class="flex items-center gap-2 flex-wrap">
+    <span class="text-xs font-semibold text-slate-500 mr-1">
+      <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+      Filter:</span>
+    ${buttons}
+  </div>`;
+}
+
+function setProductFilter(id, page) {
+  activeProductFilter = id;
+  if (page === 'production-plan') renderProductionPlan();
+  else if (page === 'productionMgmt') renderProductionManagement();
+}
+
 // ========================================
 // Environment Detection - Hide localhost-only features in production
 // ========================================
@@ -4141,7 +4178,7 @@ function renderProductionPlan() {
   // Render tab navigation
   content.innerHTML = `
     <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-bold text-gray-800">Production Plan</h2>
           <p class="text-sm text-gray-600 mt-1">Define assumptions, run simulations, and compare scenarios.</p>
@@ -4149,6 +4186,9 @@ function renderProductionPlan() {
         <div class="px-3 py-1 bg-purple-100 border border-purple-300 rounded-lg">
           <span class="text-xs font-mono font-semibold text-purple-700">v2.2.5</span>
         </div>
+      </div>
+      <div class="mb-6 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+        ${renderProductFilterBar('production-plan')}
       </div>
 
       <!-- Tab Navigation -->
@@ -11786,6 +11826,9 @@ function renderProductionManagement() {
         '<button onclick="exportProductionSnapshot()" class="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2" style="cursor:pointer;">' +
           '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
           'Export Snapshot</button>' +
+      '</div>' +
+      '<div class="mt-5 p-3 bg-white/60 border border-slate-200 rounded-xl">' +
+        renderProductFilterBar('productionMgmt') +
       '</div>' +
     '</div>' +
 
