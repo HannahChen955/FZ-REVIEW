@@ -23,18 +23,16 @@ window.STATE = STATE;
 const $ = (id) => document.getElementById(id);
 
 // ---- Global Product Filter for Production pages ----
-let activeProductFilter = 'all'; // 'all' | 'product_a' | 'product_b' | 'product_c' | 'product_d'
+let activeProductFilter = 'product_a'; // 'product_a' | 'product_b' | 'product_c' | 'product_d'
 
 function renderProductFilterBar(page) {
   const products = [
-    { id: 'all', label: 'All Products', color: 'slate' },
     { id: 'product_a', label: 'Product A', color: 'blue' },
     { id: 'product_b', label: 'Product B', color: 'orange' },
     { id: 'product_c', label: 'Product C', color: 'emerald' },
     { id: 'product_d', label: 'Product D', color: 'pink' }
   ];
   const colorMap = {
-    slate: { active: 'bg-slate-800 text-white', inactive: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50' },
     blue: { active: 'bg-blue-600 text-white', inactive: 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-50' },
     orange: { active: 'bg-orange-500 text-white', inactive: 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-50' },
     emerald: { active: 'bg-emerald-600 text-white', inactive: 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50' },
