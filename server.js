@@ -14,6 +14,9 @@ const openai = new OpenAI({
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Match Vercel config: root → index_v2.html (must be before static middleware)
+app.get('/', (req, res) => res.sendFile(__dirname + '/index_v2.html'));
+
 app.use(express.static('.')); // Serve static files from current directory
 
 // System prompts for different AI actions
